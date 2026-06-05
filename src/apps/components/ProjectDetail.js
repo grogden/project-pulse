@@ -17,7 +17,7 @@ function ProjectDetail() {
   const [projectData, setProjectData] = useState({});
   
   // Collapsible sections
-  const [showProjectInfo, setShowProjectInfo] = useState(true);
+  const [showProjectInfo, setShowProjectInfo] = useState(false);
   const [showQuotes, setShowQuotes] = useState(true);
   const [showInvoices, setShowInvoices] = useState(true);
 
