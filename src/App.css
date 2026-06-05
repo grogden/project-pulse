@@ -317,6 +317,23 @@ li {
   overflow-x: hidden;
 }
 
+.section-header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.section-header-row .section-toggle-btn {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.section-header-row .pencil-btn {
+  flex-shrink: 0;
+  margin-bottom: 0;
+}
+
 .section-toggle-btn {
   width: 100%;
   padding: 15px 20px;
@@ -337,14 +354,6 @@ li {
 
 .section-toggle-btn:hover {
   background-color: #f0f0f0;
-}
-
-.section-toggle-btn .pencil-btn {
-  margin-left: auto;
-  padding: 5px 8px;
-  min-width: 35px;
-  min-height: 35px;
-  flex-shrink: 0;
 }
 
 /* QUOTES SECTION */
@@ -1094,6 +1103,14 @@ li {
     width: auto;
     flex: 1;
   }
+
+  .section-header-row .section-toggle-btn {
+    flex: 1;
+  }
+
+  .section-header-row .pencil-btn {
+    flex-shrink: 0;
+  }
 }
 
 /* DESKTOP */
@@ -1176,5 +1193,19 @@ li {
 
   .invoice-file-input-label {
     width: 100%;
+  }
+
+  .section-header-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .section-header-row .section-toggle-btn {
+    width: 100%;
+  }
+
+  .section-header-row .pencil-btn {
+    width: 100%;
+    justify-content: flex-start;
   }
 }

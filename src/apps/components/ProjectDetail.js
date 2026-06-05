@@ -224,7 +224,7 @@ function ProjectDetail() {
 
         if (uploadError) {
           console.error('Error uploading file:', uploadError);
-          alert('Error uploading file');
+          alert('Error uploading file: ' + uploadError.message);
           setUploadingNewInvoice(false);
           return;
         }
@@ -237,7 +237,7 @@ function ProjectDetail() {
         fileName = selectedInvoiceFile.name;
       } catch (error) {
         console.error('Error:', error);
-        alert('Error uploading file');
+        alert('Error uploading file: ' + error.message);
         setUploadingNewInvoice(false);
         return;
       }
@@ -262,7 +262,7 @@ function ProjectDetail() {
 
     if (error) {
       console.error('Error adding invoice:', error);
-      alert('Error adding invoice');
+      alert('Error adding invoice: ' + error.message);
       setUploadingNewInvoice(false);
       return;
     }
@@ -293,7 +293,7 @@ function ProjectDetail() {
 
       if (uploadError) {
         console.error('Error uploading file:', uploadError);
-        alert('Error uploading file');
+        alert('Error uploading file: ' + uploadError.message);
         setUploadingInvoiceId(null);
         return;
       }
@@ -314,7 +314,7 @@ function ProjectDetail() {
 
       if (updateError) {
         console.error('Error updating invoice:', updateError);
-        alert('Error saving file reference');
+        alert('Error saving file reference: ' + updateError.message);
         setUploadingInvoiceId(null);
         return;
       }
@@ -330,7 +330,7 @@ function ProjectDetail() {
       alert('File uploaded successfully');
     } catch (error) {
       console.error('Error:', error);
-      alert('Error uploading file');
+      alert('Error uploading file: ' + error.message);
       setUploadingInvoiceId(null);
     }
   };
@@ -367,24 +367,23 @@ function ProjectDetail() {
 
       {/* PROJECT INFO SECTION - COLLAPSIBLE */}
       <div className="collapsible-section">
-        <button 
-          className="section-toggle-btn"
-          onClick={() => setShowProjectInfo(!showProjectInfo)}
-        >
-          {showProjectInfo ? '▼' : '▶'} Project Information
+        <div className="section-header-row">
+          <button 
+            className="section-toggle-btn"
+            onClick={() => setShowProjectInfo(!showProjectInfo)}
+          >
+            {showProjectInfo ? '▼' : '▶'} Project Information
+          </button>
           {!editingProject && (
             <button 
               className="pencil-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditingProject(!editingProject);
-              }}
+              onClick={() => setEditingProject(!editingProject)}
               title="Edit project"
             >
               ✏️
             </button>
           )}
-        </button>
+        </div>
 
         {showProjectInfo && (
           editingProject ? (
