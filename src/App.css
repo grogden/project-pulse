@@ -1,38 +1,587 @@
+* {
+  box-sizing: border-box;
+}
+
 .App {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px;
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+}
+
+h1 {
+  font-size: 24px;
+  margin: 20px 0 30px 0;
   text-align: center;
+  color: #333;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+h2 {
+  font-size: 20px;
+  margin: 20px 0 15px 0;
+  color: #333;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+h3 {
+  font-size: 18px;
+  margin: 15px 0 10px 0;
+  color: #333;
+}
+
+/* FORM SECTION */
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px 0 30px 0;
+}
+
+.form-section input {
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.form-section button {
+  padding: 12px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  min-height: 44px;
+}
+
+.form-section button:hover {
+  background-color: #0056b3;
+}
+
+.form-section button:active {
+  background-color: #004085;
+}
+
+/* PROJECTS SECTION */
+.projects-section {
+  margin-top: 30px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  margin-bottom: 12px;
+}
+
+.project-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  background-color: white;
+  align-items: center;
+}
+
+.project-header {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.project-header strong {
+  font-size: 16px;
+  color: #333;
+  word-break: break-word;
+}
+
+.date {
+  display: block;
+  font-size: 13px;
+  color: #666;
+  word-break: break-word;
+}
+
+/* BUTTONS */
+.delete-btn {
+  padding: 10px 15px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  min-height: 44px;
+  font-weight: bold;
+  align-self: flex-start;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.delete-btn:active {
+  background-color: #bd2130;
+}
+
+/* QUOTES SECTION */
+.quotes-section {
+  background-color: #f0f8ff;
+  padding: 15px;
+  margin-top: 10px;
+  border-radius: 4px;
+  border-left: 4px solid #007bff;
+  margin-bottom: 15px;
+}
+
+.quote-item {
+  background-color: white;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quote-item div {
+  flex: 1;
+}
+
+.quote-item strong {
+  font-size: 16px;
+  color: #28a745;
+}
+
+.quote-item p {
+  margin: 5px 0;
+  word-break: break-word;
+}
+
+.add-quote-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.add-quote-form input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 100%;
+}
+
+.add-quote-form button {
+  padding: 12px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  min-height: 44px;
+}
+
+.add-quote-form button:hover {
+  background-color: #218838;
+}
+
+/* INVOICES SECTION */
+.invoices-section {
+  background-color: #fff3cd;
+  padding: 15px;
+  margin-top: 10px;
+  border-radius: 4px;
+  border-left: 4px solid #ffc107;
+  margin-bottom: 15px;
+}
+
+.invoice-item {
+  background-color: white;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.invoice-item div {
+  flex: 1;
+}
+
+.invoice-item strong {
+  font-size: 16px;
+  color: #333;
+}
+
+.invoice-item p {
+  margin: 5px 0;
+  word-break: break-word;
+}
+
+.invoice-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.status {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  width: fit-content;
+}
+
+.status-draft {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.status-sent {
+  background-color: #cfe2ff;
+  color: #084298;
+}
+
+.status-paid {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.amount {
+  color: #28a745;
+  font-size: 16px;
+}
+
+.add-invoice-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.add-invoice-form input,
+.add-invoice-form select {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 100%;
+}
+
+.add-invoice-form button {
+  padding: 12px;
+  background-color: #ffc107;
+  color: black;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  min-height: 44px;
+}
+
+.add-invoice-form button:hover {
+  background-color: #e0a800;
+}
+
+/* TABLET & LARGER SCREENS */
+@media (min-width: 768px) {
+  .App {
+    padding: 30px;
+  }
+
+  h1 {
+    font-size: 32px;
+  }
+
+  .form-section {
+    flex-direction: row;
+    gap: 15px;
+  }
+
+  .form-section input {
+    flex: 1;
+  }
+
+  .form-section button {
+    flex: 0 0 auto;
+    min-width: 150px;
+  }
+
+  .project-item {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .project-header {
+    flex: 1;
+  }
+
+  .delete-btn {
+    align-self: auto;
+  }
+
+  .invoice-details {
+    flex-direction: row;
+    gap: 15px;
+  }
+
+  .add-quote-form,
+  .add-invoice-form {
+    flex-direction: row;
+  }
+
+  .add-quote-form input,
+  .add-invoice-form input,
+  .add-invoice-form select {
+    flex: 1;
+  }
+
+  .add-quote-form button,
+  .add-invoice-form button {
+    flex: 0 0 auto;
+    min-width: 120px;
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* DESKTOP */
+@media (min-width: 1024px) {
+  .App {
+    padding: 40px;
+  }
+
+  .form-section {
+    max-width: 100%;
+  }
+}
+
+/* Small phones */
+@media (max-width: 360px) {
+  .App {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 20px;
+    margin: 15px 0 20px 0;
+  }
+
+  .form-section {
+    gap: 8px;
+  }
+
+  .form-section input,
+  .form-section button {
+    font-size: 16px;
+    padding: 10px;
+  }
+
+  .project-item,
+  .quote-item,
+  .invoice-item {
+    padding: 10px;
+  }
+}
+
+/* COLLAPSIBLE ADD PROJECT */
+.add-project-container {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.toggle-add-project-btn {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  min-height: 44px;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.toggle-add-project-btn:hover {
+  background-color: #0056b3;
+}
+
+/* QUOTE EDIT MODE */
+.quote-edit-mode {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  gap: 10px;
+  background-color: #f9f9f9;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.quote-edit-mode input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 100%;
+}
+
+.edit-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.edit-buttons button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  min-height: 44px;
+}
+
+.save-btn {
+  background-color: #28a745;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.save-btn:hover {
+  background-color: #218838;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.cancel-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background-color: #5a6268;
+}
+
+/* QUOTE ACTIONS */
+.quote-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.edit-btn {
+  padding: 8px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.edit-btn:hover {
+  background-color: #0056b3;
+}
+
+@media (min-width: 768px) {
+  .toggle-add-project-btn {
+    width: auto;
+    margin-bottom: 15px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .edit-buttons {
+    justify-content: flex-start;
   }
+
+  .edit-buttons button {
+    flex: 0 0 auto;
+    min-width: 100px;
+  }
+
+  .quote-actions {
+    flex-direction: row;
+  }
+
+  .edit-btn {
+    flex: 0 0 auto;
+    min-width: 80px;
+  }
+}
+
+/* DELETE BUTTONS */
+.delete-actions {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.delete-btn {
+  padding: 8px 10px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  min-height: 40px;
+  min-width: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.delete-btn:active {
+  background-color: #bd2130;
+}
+
+.cancel-delete-btn {
+  padding: 8px 10px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  min-height: 40px;
+  min-width: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancel-delete-btn:hover {
+  background-color: #5a6268;
 }
