@@ -23,30 +23,30 @@ function ProjectList() {
   });
 
   useEffect(() => {
+    const fetchProjects = async () => {
+      if (!user) return;
+
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('contractor_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching projects:', error);
+      } else {
+        setProjects(data || []);
+      }
+      setLoading(false);
+    };
+
     fetchProjects();
   }, [user]);
 
   useEffect(() => {
     applyFilters();
   }, [projects, searchTerm, statusFilters]);
-
-  const fetchProjects = async () => {
-    if (!user) return;
-
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('contractor_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching projects:', error);
-    } else {
-      setProjects(data || []);
-    }
-    setLoading(false);
-  };
 
   const applyFilters = () => {
     let filtered = projects;

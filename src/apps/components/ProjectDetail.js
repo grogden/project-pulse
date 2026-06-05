@@ -344,9 +344,7 @@ function ProjectDetail() {
       const fileExt = file.name.split('.').pop();
       const fileName = `${projectId}_${invoiceId}_${Date.now()}.${fileExt}`;
 
-      const { data, error: uploadError } = await supabase.storage
-        .from('invoice-files')
-        .upload(fileName, file);
+      const { error: uploadError } = await supabase.storage
 
       if (uploadError) {
         console.error('Error uploading file:', uploadError);
