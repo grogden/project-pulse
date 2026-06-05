@@ -45,33 +45,33 @@ function ProjectList() {
   }, [user]);
 
   useEffect(() => {
+    const applyFilters = () => {
+      let filtered = projects;
+
+      // Apply status filter
+      const selectedStatuses = Object.keys(statusFilters).filter(status => statusFilters[status]);
+      if (selectedStatuses.length > 0) {
+        filtered = filtered.filter(project => selectedStatuses.includes(project.status));
+      }
+
+      // Apply search filter
+      if (searchTerm.trim()) {
+        const term = searchTerm.toLowerCase();
+        filtered = filtered.filter(project =>
+          project.name.toLowerCase().includes(term) ||
+          project.client.toLowerCase().includes(term) ||
+          (project.email && project.email.toLowerCase().includes(term)) ||
+          (project.phone && project.phone.includes(term)) ||
+          (project.city && project.city.toLowerCase().includes(term)) ||
+          (project.state && project.state.toLowerCase().includes(term))
+        );
+      }
+
+      setFilteredProjects(filtered);
+    };
+
     applyFilters();
   }, [projects, searchTerm, statusFilters]);
-
-  const applyFilters = () => {
-    let filtered = projects;
-
-    // Apply status filter
-    const selectedStatuses = Object.keys(statusFilters).filter(status => statusFilters[status]);
-    if (selectedStatuses.length > 0) {
-      filtered = filtered.filter(project => selectedStatuses.includes(project.status));
-    }
-
-    // Apply search filter
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(project =>
-        project.name.toLowerCase().includes(term) ||
-        project.client.toLowerCase().includes(term) ||
-        (project.email && project.email.toLowerCase().includes(term)) ||
-        (project.phone && project.phone.includes(term)) ||
-        (project.city && project.city.toLowerCase().includes(term)) ||
-        (project.state && project.state.toLowerCase().includes(term))
-      );
-    }
-
-    setFilteredProjects(filtered);
-  };
 
   const formatPhoneNumber = (value) => {
     const cleaned = value.replace(/\D/g, '');
