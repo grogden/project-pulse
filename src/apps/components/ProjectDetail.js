@@ -9,17 +9,24 @@ function ProjectDetail() {
   const [quotes, setQuotes] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [editingProject, setEditingProject] = useState(false);
   const [editingQuoteId, setEditingQuoteId] = useState(null);
   const [editQuoteData, setEditQuoteData] = useState({ description: '', amount: '' });
   const [deletingQuoteId, setDeletingQuoteId] = useState(null);
   const [deletingInvoiceId, setDeletingInvoiceId] = useState(null);
+  const [projectData, setProjectData] = useState({});
+  
+  // Collapsible sections
+  const [showProjectInfo, setShowProjectInfo] = useState(true);
+  const [showQuotes, setShowQuotes] = useState(true);
+  const [showInvoices, setShowInvoices] = useState(true);
 
   useEffect(() => {
     const fetchProjectData = async () => {
       setLoading(true);
       
       // Fetch project
-      const { data: projectData, error: projectError } = await supabase
+      const { data: projectDataResponse, error: projectError } = await supabase
         .from('projects')
         .select('*')
         .eq('id', projectId)
@@ -31,8 +38,9 @@ function ProjectDetail() {
         return;
       }
 
-      setProject(projectData);
-      document.title = `${projectData.name} - Project Pulse`;
+      setProject(projectDataResponse);
+      setProjectData(projectDataResponse);
+      document.title = `${projectDataResponse.name} - Project Pulse`;
 
       // Fetch quotes
       const { data: quotesData, error: quotesError } = await supabase
@@ -61,6 +69,50 @@ function ProjectDetail() {
 
     fetchProjectData();
   }, [projectId]);
+
+  const formatPhoneNumber = (value) => {
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.length <= 3) return cleaned;
+    if (cleaned.length <= 6) return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+  };
+
+  const formatBudgetDisplay = (value) => {
+    if (!value) return '';
+    return parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const handleSaveProjectChanges = async () => {
+    const { error } = await supabase
+      .from('projects')
+      .update({
+        name: projectData.name,
+        client: projectData.client,
+        phone: projectData.phone || null,
+        email: projectData.email || null,
+        street_address: projectData.street_address || null,
+        city: projectData.city || null,
+        state: projectData.state || null,
+        zip_code: projectData.zip_code || null,
+        country: projectData.country || null,
+        status: projectData.status || 'not started',
+        start_date: projectData.start_date || null,
+        due_date: projectData.due_date || null,
+        budget: projectData.budget ? parseFloat(projectData.budget) : null,
+        notes: projectData.notes || null
+      })
+      .eq('id', projectId);
+
+    if (error) {
+      console.error('Error updating project:', error);
+      alert('Error saving changes');
+      return;
+    }
+
+    setProject(projectData);
+    setEditingProject(false);
+    alert('Project updated successfully');
+  };
 
   const handleAddQuote = async () => {
     const desc = document.getElementById('quote-desc').value;
@@ -202,170 +254,446 @@ function ProjectDetail() {
     <div className="App">
       <div className="project-detail-header">
         <button className="back-btn" onClick={() => navigate('/quote-builder')}>← Back</button>
-        <div>
-          <h1>{project.name}</h1>
-          <p className="project-meta">Client: {project.client}</p>
-        </div>
+        <h1>{project.name}</h1>
       </div>
 
-      {/* QUOTES SECTION */}
-      <div className="quotes-section">
-        <h2>Quotes ({quotes.length})</h2>
-        {quotes.length > 0 ? (
-          <ul>
-            {quotes.map((quote) => (
-              <li key={quote.id} className="quote-item">
-                {editingQuoteId === quote.id ? (
-                  <div className="quote-edit-mode">
-                    <input
-                      type="text"
-                      value={editQuoteData.description}
-                      onChange={(e) => setEditQuoteData({ ...editQuoteData, description: e.target.value })}
-                      placeholder="Quote description"
-                    />
-                    <input
-                      type="number"
-                      value={editQuoteData.amount}
-                      onChange={(e) => setEditQuoteData({ ...editQuoteData, amount: e.target.value })}
-                      placeholder="Amount"
-                    />
-                    <div className="edit-buttons">
-                      <button 
-                        className="save-btn"
-                        onClick={() => handleSaveQuote(quote.id)}
-                      >
-                        Save
-                      </button>
-                      <button 
-                        className="cancel-btn"
-                        onClick={handleCancelEdit}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <strong>${quote.amount}</strong>
-                    <p>{quote.description}</p>
-                    <span className="date">{quote.date ? new Date(quote.date).toLocaleDateString() : ''}</span>
-                    <div className="quote-actions">
-                      <button 
-                        className="edit-btn"
-                        onClick={() => handleEditQuote(quote)}
-                      >
-                        Edit
-                      </button>
-                      <button 
-                        className="delete-btn"
-                        title="Delete quote"
-                        onClick={() => {
-                          if (deletingQuoteId === quote.id) {
-                            handleDeleteQuote(quote.id);
-                          } else {
-                            setDeletingQuoteId(quote.id);
-                          }
-                        }}
-                      >
-                        {deletingQuoteId === quote.id ? '✓' : '🗑️'}
-                      </button>
-                      {deletingQuoteId === quote.id && (
-                        <button 
-                          className="cancel-delete-btn"
-                          onClick={() => setDeletingQuoteId(null)}
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
+      {/* PROJECT INFO SECTION - COLLAPSIBLE */}
+      <div className="collapsible-section">
+        <button 
+          className="section-toggle-btn"
+          onClick={() => setShowProjectInfo(!showProjectInfo)}
+        >
+          {showProjectInfo ? '▼' : '▶'} Project Information
+          {!editingProject && (
+            <button 
+              className="pencil-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingProject(!editingProject);
+              }}
+              title="Edit project"
+            >
+              ✏️
+            </button>
+          )}
+        </button>
+
+        {showProjectInfo && (
+          editingProject ? (
+            <div className="project-edit-section">
+              <h3>Basic Information</h3>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Project Name</label>
+                  <input
+                    type="text"
+                    placeholder="Project name"
+                    value={projectData.name || ''}
+                    onChange={(e) => setProjectData({ ...projectData, name: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Client Name</label>
+                  <input
+                    type="text"
+                    placeholder="Client name"
+                    value={projectData.client || ''}
+                    onChange={(e) => setProjectData({ ...projectData, client: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <h3>Contact Information</h3>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    placeholder="email@example.com"
+                    value={projectData.email || ''}
+                    onChange={(e) => setProjectData({ ...projectData, email: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Phone</label>
+                  <input
+                    type="tel"
+                    placeholder="(123) 456-7890"
+                    value={projectData.phone || ''}
+                    onChange={(e) => setProjectData({ ...projectData, phone: formatPhoneNumber(e.target.value) })}
+                  />
+                </div>
+              </div>
+
+              <h3>Address</h3>
+              <div className="form-row">
+                <div className="form-group" style={{ flex: '2' }}>
+                  <label>Street Address</label>
+                  <input
+                    type="text"
+                    placeholder="Street address"
+                    value={projectData.street_address || ''}
+                    onChange={(e) => setProjectData({ ...projectData, street_address: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>City</label>
+                  <input
+                    type="text"
+                    placeholder="City"
+                    value={projectData.city || ''}
+                    onChange={(e) => setProjectData({ ...projectData, city: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>State</label>
+                  <input
+                    type="text"
+                    placeholder="State"
+                    value={projectData.state || ''}
+                    onChange={(e) => setProjectData({ ...projectData, state: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Zip Code</label>
+                  <input
+                    type="text"
+                    placeholder="Zip code"
+                    value={projectData.zip_code || ''}
+                    onChange={(e) => setProjectData({ ...projectData, zip_code: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Country</label>
+                  <input
+                    type="text"
+                    placeholder="Country"
+                    value={projectData.country || ''}
+                    onChange={(e) => setProjectData({ ...projectData, country: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <h3>Project Details</h3>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Status</label>
+                  <select 
+                    value={projectData.status || 'not started'} 
+                    onChange={(e) => setProjectData({ ...projectData, status: e.target.value })}
+                  >
+                    <option value="not started">Not Started</option>
+                    <option value="in progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="on hold">On Hold</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Start Date</label>
+                  <input
+                    type="date"
+                    value={projectData.start_date || ''}
+                    onChange={(e) => setProjectData({ ...projectData, start_date: e.target.value })}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Due Date</label>
+                  <input
+                    type="date"
+                    value={projectData.due_date || ''}
+                    onChange={(e) => setProjectData({ ...projectData, due_date: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Budget</label>
+                  <input
+                    type="number"
+                    placeholder="0.00"
+                    value={projectData.budget || ''}
+                    onChange={(e) => setProjectData({ ...projectData, budget: e.target.value })}
+                    step="0.01"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group" style={{ flex: '1' }}>
+                  <label>Notes</label>
+                  <textarea
+                    placeholder="Additional notes"
+                    value={projectData.notes || ''}
+                    onChange={(e) => setProjectData({ ...projectData, notes: e.target.value })}
+                    rows="3"
+                  />
+                </div>
+              </div>
+
+              <div className="form-buttons">
+                <button className="save-btn" onClick={handleSaveProjectChanges}>Save Changes</button>
+                <button className="cancel-btn" onClick={() => setEditingProject(false)}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <div className="project-info-section">
+              <div className="info-grid">
+                <div className="info-item">
+                  <label>Client:</label>
+                  <p>{project.client}</p>
+                </div>
+                {project.email && (
+                  <div className="info-item">
+                    <label>Email:</label>
+                    <p>{project.email}</p>
                   </div>
                 )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No quotes yet.</p>
+                {project.phone && (
+                  <div className="info-item">
+                    <label>Phone:</label>
+                    <p>{project.phone}</p>
+                  </div>
+                )}
+                {project.street_address && (
+                  <div className="info-item">
+                    <label>Address:</label>
+                    <p>
+                      {project.street_address}
+                      {project.city && `, ${project.city}`}
+                      {project.state && `, ${project.state}`}
+                      {project.zip_code && ` ${project.zip_code}`}
+                      {project.country && `, ${project.country}`}
+                    </p>
+                  </div>
+                )}
+                {project.status && (
+                  <div className="info-item">
+                    <label>Status:</label>
+                    <span className={`status status-${project.status}`}>{project.status}</span>
+                  </div>
+                )}
+                {project.start_date && (
+                  <div className="info-item">
+                    <label>Start Date:</label>
+                    <p>{new Date(project.start_date).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {project.due_date && (
+                  <div className="info-item">
+                    <label>Due Date:</label>
+                    <p>{new Date(project.due_date).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {project.budget && (
+                  <div className="info-item">
+                    <label>Budget:</label>
+                    <p>${formatBudgetDisplay(project.budget)}</p>
+                  </div>
+                )}
+              </div>
+              {project.notes && (
+                <div className="notes-section">
+                  <label>Notes:</label>
+                  <p>{project.notes}</p>
+                </div>
+              )}
+            </div>
+          )
         )}
-        
-        <div className="add-quote-form">
-          <input 
-            type="text" 
-            placeholder="Quote description..." 
-            id="quote-desc"
-          />
-          <input 
-            type="number" 
-            placeholder="Amount ($)" 
-            id="quote-amount"
-          />
-          <button onClick={handleAddQuote}>Add Quote</button>
-        </div>
       </div>
 
-      {/* INVOICES SECTION */}
-      <div className="invoices-section">
-        <h2>Invoices ({invoices.length})</h2>
-        {invoices.length > 0 ? (
-          <ul>
-            {invoices.map((invoice) => (
-              <li key={invoice.id} className="invoice-item">
-                <div>
-                  <strong>Invoice #{invoice.invoice_number}</strong>
-                  <p>{invoice.description}</p>
-                  <div className="invoice-details">
-                    <span className="date">{invoice.date ? new Date(invoice.date).toLocaleDateString() : ''}</span>
-                    <span className={`status status-${invoice.status}`}>{invoice.status}</span>
-                    <strong className="amount">${invoice.amount}</strong>
-                  </div>
-                </div>
-                <div className="delete-actions">
-                  <button 
-                    className="delete-btn"
-                    title="Delete invoice"
-                    onClick={() => {
-                      if (deletingInvoiceId === invoice.id) {
-                        handleDeleteInvoice(invoice.id);
-                      } else {
-                        setDeletingInvoiceId(invoice.id);
-                      }
-                    }}
-                  >
-                    {deletingInvoiceId === invoice.id ? '✓' : '🗑️'}
-                  </button>
-                  {deletingInvoiceId === invoice.id && (
-                    <button 
-                      className="cancel-delete-btn"
-                      onClick={() => setDeletingInvoiceId(null)}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No invoices yet.</p>
+      {/* QUOTES SECTION - COLLAPSIBLE */}
+      <div className="collapsible-section">
+        <button 
+          className="section-toggle-btn"
+          onClick={() => setShowQuotes(!showQuotes)}
+        >
+          {showQuotes ? '▼' : '▶'} Quotes ({quotes.length})
+        </button>
+
+        {showQuotes && (
+          <div className="quotes-section-content">
+            {quotes.length > 0 ? (
+              <ul>
+                {quotes.map((quote) => (
+                  <li key={quote.id} className="quote-item">
+                    {editingQuoteId === quote.id ? (
+                      <div className="quote-edit-mode">
+                        <input
+                          type="text"
+                          value={editQuoteData.description}
+                          onChange={(e) => setEditQuoteData({ ...editQuoteData, description: e.target.value })}
+                          placeholder="Quote description"
+                        />
+                        <input
+                          type="number"
+                          value={editQuoteData.amount}
+                          onChange={(e) => setEditQuoteData({ ...editQuoteData, amount: e.target.value })}
+                          placeholder="Amount"
+                        />
+                        <div className="edit-buttons">
+                          <button 
+                            className="save-btn"
+                            onClick={() => handleSaveQuote(quote.id)}
+                          >
+                            Save
+                          </button>
+                          <button 
+                            className="cancel-btn"
+                            onClick={handleCancelEdit}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="quote-header-row">
+                          <div className="quote-info">
+                            <strong>${formatBudgetDisplay(quote.amount)}</strong>
+                            <p>{quote.description}</p>
+                            <span className="date">{quote.date ? new Date(quote.date).toLocaleDateString() : ''}</span>
+                          </div>
+                          <div className="quote-actions">
+                            <button 
+                              className="pencil-btn"
+                              onClick={() => handleEditQuote(quote)}
+                              title="Edit quote"
+                            >
+                              ✏️
+                            </button>
+                            <button 
+                              className="delete-btn"
+                              title="Delete quote"
+                              onClick={() => {
+                                if (deletingQuoteId === quote.id) {
+                                  handleDeleteQuote(quote.id);
+                                } else {
+                                  setDeletingQuoteId(quote.id);
+                                }
+                              }}
+                            >
+                              {deletingQuoteId === quote.id ? '✓' : '🗑️'}
+                            </button>
+                            {deletingQuoteId === quote.id && (
+                              <button 
+                                className="cancel-delete-btn"
+                                onClick={() => setDeletingQuoteId(null)}
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No quotes yet.</p>
+            )}
+            
+            <div className="add-quote-form">
+              <input 
+                type="text" 
+                placeholder="Quote description..." 
+                id="quote-desc"
+              />
+              <input 
+                type="number" 
+                placeholder="Amount ($)" 
+                id="quote-amount"
+              />
+              <button onClick={handleAddQuote}>Add Quote</button>
+            </div>
+          </div>
         )}
-        
-        <div className="add-invoice-form">
-          <input 
-            type="text" 
-            placeholder="Invoice description..." 
-            id="invoice-desc"
-          />
-          <input 
-            type="number" 
-            placeholder="Amount ($)" 
-            id="invoice-amount"
-          />
-          <select id="invoice-status" defaultValue="draft">
-            <option value="draft">Draft</option>
-            <option value="sent">Sent</option>
-            <option value="paid">Paid</option>
-          </select>
-          <button onClick={handleAddInvoice}>Add Invoice</button>
-        </div>
+      </div>
+
+      {/* INVOICES SECTION - COLLAPSIBLE */}
+      <div className="collapsible-section">
+        <button 
+          className="section-toggle-btn"
+          onClick={() => setShowInvoices(!showInvoices)}
+        >
+          {showInvoices ? '▼' : '▶'} Invoices ({invoices.length})
+        </button>
+
+        {showInvoices && (
+          <div className="invoices-section-content">
+            {invoices.length > 0 ? (
+              <ul>
+                {invoices.map((invoice) => (
+                  <li key={invoice.id} className="invoice-item">
+                    <div className="invoice-header-row">
+                      <div className="invoice-info">
+                        <strong>Invoice #{invoice.invoice_number}</strong>
+                        <p>{invoice.description}</p>
+                        <div className="invoice-details">
+                          <span className="date">{invoice.date ? new Date(invoice.date).toLocaleDateString() : ''}</span>
+                          <span className={`status status-${invoice.status}`}>{invoice.status}</span>
+                          <strong className="amount">${formatBudgetDisplay(invoice.amount)}</strong>
+                        </div>
+                      </div>
+                      <div className="invoice-actions">
+                        <button 
+                          className="delete-btn"
+                          title="Delete invoice"
+                          onClick={() => {
+                            if (deletingInvoiceId === invoice.id) {
+                              handleDeleteInvoice(invoice.id);
+                            } else {
+                              setDeletingInvoiceId(invoice.id);
+                            }
+                          }}
+                        >
+                          {deletingInvoiceId === invoice.id ? '✓' : '🗑️'}
+                        </button>
+                        {deletingInvoiceId === invoice.id && (
+                          <button 
+                            className="cancel-delete-btn"
+                            onClick={() => setDeletingInvoiceId(null)}
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No invoices yet.</p>
+            )}
+            
+            <div className="add-invoice-form">
+              <input 
+                type="text" 
+                placeholder="Invoice description..." 
+                id="invoice-desc"
+              />
+              <input 
+                type="number" 
+                placeholder="Amount ($)" 
+                id="invoice-amount"
+              />
+              <select id="invoice-status" defaultValue="draft">
+                <option value="draft">Draft</option>
+                <option value="sent">Sent</option>
+                <option value="paid">Paid</option>
+              </select>
+              <button onClick={handleAddInvoice}>Add Invoice</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
