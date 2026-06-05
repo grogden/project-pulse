@@ -35,6 +35,40 @@ h3:first-of-type {
   margin-top: 0;
 }
 
+/* CURRENCY INPUT WRAPPER */
+.currency-input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.currency-symbol {
+  padding: 10px 12px;
+  background-color: #f9f9f9;
+  color: #333;
+  font-weight: bold;
+  border-right: 1px solid #ccc;
+  min-width: 40px;
+  text-align: center;
+}
+
+.currency-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  font-size: 16px;
+  font-family: Arial, sans-serif;
+  text-align: right;
+}
+
+.currency-input:focus {
+  outline: none;
+  background-color: #f9f9f9;
+}
+
 /* FORM SECTION */
 .form-section {
   display: flex;
@@ -658,6 +692,27 @@ li {
   opacity: 0.6;
 }
 
+/* INVOICE EDIT MODE */
+.invoice-edit-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #f9f9f9;
+  padding: 12px;
+  border-radius: 4px;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.invoice-edit-mode input,
+.invoice-edit-mode select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 100%;
+}
+
 /* INVOICE FILE SECTION */
 .invoice-file-section {
   margin-top: 12px;
@@ -1044,7 +1099,9 @@ li {
 
   .add-quote-form input,
   .add-invoice-form input,
-  .add-invoice-form select {
+  .add-invoice-form select,
+  .add-quote-form .currency-input-wrapper,
+  .add-invoice-form .currency-input-wrapper {
     flex: 1;
   }
 
@@ -1110,6 +1167,20 @@ li {
 
   .section-header-row .pencil-btn {
     flex-shrink: 0;
+  }
+
+  .quote-edit-mode,
+  .invoice-edit-mode {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .quote-edit-mode input,
+  .quote-edit-mode .currency-input-wrapper,
+  .invoice-edit-mode input,
+  .invoice-edit-mode select,
+  .invoice-edit-mode .currency-input-wrapper {
+    flex: 1;
   }
 }
 
@@ -1207,5 +1278,18 @@ li {
   .section-header-row .pencil-btn {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .quote-edit-mode,
+  .invoice-edit-mode {
+    flex-direction: column;
+  }
+
+  .quote-edit-mode input,
+  .quote-edit-mode .currency-input-wrapper,
+  .invoice-edit-mode input,
+  .invoice-edit-mode select,
+  .invoice-edit-mode .currency-input-wrapper {
+    width: 100%;
   }
 }

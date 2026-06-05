@@ -12,6 +12,8 @@ function ProjectDetail() {
   const [editingProject, setEditingProject] = useState(false);
   const [editingQuoteId, setEditingQuoteId] = useState(null);
   const [editQuoteData, setEditQuoteData] = useState({ description: '', amount: '' });
+  const [editingInvoiceId, setEditingInvoiceId] = useState(null);
+  const [editInvoiceData, setEditInvoiceData] = useState({ description: '', amount: '', status: '' });
   const [deletingQuoteId, setDeletingQuoteId] = useState(null);
   const [deletingInvoiceId, setDeletingInvoiceId] = useState(null);
   const [projectData, setProjectData] = useState({});
@@ -83,6 +85,24 @@ function ProjectDetail() {
   const formatBudgetDisplay = (value) => {
     if (!value) return '';
     return parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  const formatCurrencyInput = (value) => {
+    // Remove non-numeric characters except decimal
+    const cleaned = value.replace(/[^\d.]/g, '');
+    // Ensure only one decimal point
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      return parts[0] + '.' + parts.slice(1).join('');
+    }
+    return cleaned;
+  };
+
+  const formatCurrencyDisplay = (value) => {
+    if (!value) return '$0.00';
+    const num = parseFloat(value);
+    if (isNaN(num)) return '$0.00';
+    return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   const handleSaveProjectChanges = async () => {
@@ -181,6 +201,47 @@ function ProjectDetail() {
   const handleCancelEdit = () => {
     setEditingQuoteId(null);
     setEditQuoteData({ description: '', amount: '' });
+  };
+
+  const handleEditInvoice = (invoice) => {
+    setEditingInvoiceId(invoice.id);
+    setEditInvoiceData({
+      description: invoice.description,
+      amount: invoice.amount.toString(),
+      status: invoice.status
+    });
+  };
+
+  const handleSaveInvoice = async (invoiceId) => {
+    if (!editInvoiceData.description || !editInvoiceData.amount) return;
+
+    const { error } = await supabase
+      .from('invoices')
+      .update({
+        description: editInvoiceData.description,
+        amount: parseFloat(editInvoiceData.amount),
+        status: editInvoiceData.status
+      })
+      .eq('id', invoiceId);
+
+    if (error) {
+      console.error('Error updating invoice:', error);
+      return;
+    }
+
+    setInvoices(invoices.map(inv => 
+      inv.id === invoiceId 
+        ? { ...inv, description: editInvoiceData.description, amount: parseFloat(editInvoiceData.amount), status: editInvoiceData.status }
+        : inv
+    ));
+
+    setEditingInvoiceId(null);
+    setEditInvoiceData({ description: '', amount: '', status: '' });
+  };
+
+  const handleCancelInvoiceEdit = () => {
+    setEditingInvoiceId(null);
+    setEditInvoiceData({ description: '', amount: '', status: '' });
   };
 
   const handleDeleteQuote = async (quoteId) => {
@@ -639,12 +700,16 @@ function ProjectDetail() {
                           onChange={(e) => setEditQuoteData({ ...editQuoteData, description: e.target.value })}
                           placeholder="Quote description"
                         />
-                        <input
-                          type="number"
-                          value={editQuoteData.amount}
-                          onChange={(e) => setEditQuoteData({ ...editQuoteData, amount: e.target.value })}
-                          placeholder="Amount"
-                        />
+                        <div className="currency-input-wrapper">
+                          <span className="currency-symbol">$</span>
+                          <input
+                            type="text"
+                            value={editQuoteData.amount}
+                            onChange={(e) => setEditQuoteData({ ...editQuoteData, amount: formatCurrencyInput(e.target.value) })}
+                            placeholder="0.00"
+                            className="currency-input"
+                          />
+                        </div>
                         <div className="edit-buttons">
                           <button 
                             className="save-btn"
@@ -664,7 +729,7 @@ function ProjectDetail() {
                       <div>
                         <div className="quote-header-row">
                           <div className="quote-info">
-                            <strong>${formatBudgetDisplay(quote.amount)}</strong>
+                            <strong className="amount">{formatCurrencyDisplay(quote.amount)}</strong>
                             <p>{quote.description}</p>
                             <span className="date">{quote.date ? new Date(quote.date).toLocaleDateString() : ''}</span>
                           </div>
@@ -714,11 +779,18 @@ function ProjectDetail() {
                 placeholder="Quote description..." 
                 id="quote-desc"
               />
-              <input 
-                type="number" 
-                placeholder="Amount ($)" 
-                id="quote-amount"
-              />
+              <div className="currency-input-wrapper">
+                <span className="currency-symbol">$</span>
+                <input 
+                  type="text" 
+                  placeholder="0.00" 
+                  id="quote-amount"
+                  onChange={(e) => {
+                    e.target.value = formatCurrencyInput(e.target.value);
+                  }}
+                  className="currency-input"
+                />
+              </div>
               <button onClick={handleAddQuote}>Add Quote</button>
             </div>
           </div>
@@ -740,88 +812,140 @@ function ProjectDetail() {
               <ul>
                 {invoices.map((invoice) => (
                   <li key={invoice.id} className="invoice-item">
-                    <div className="invoice-header-row">
-                      <div className="invoice-info">
-                        <strong>Invoice #{invoice.invoice_number}</strong>
-                        <p>{invoice.description}</p>
-                        <div className="invoice-details">
-                          <span className="date">{invoice.date ? new Date(invoice.date).toLocaleDateString() : ''}</span>
-                          <span className={`status status-${invoice.status}`}>{invoice.status}</span>
-                          <strong className="amount">${formatBudgetDisplay(invoice.amount)}</strong>
+                    {editingInvoiceId === invoice.id ? (
+                      <div className="invoice-edit-mode">
+                        <input
+                          type="text"
+                          value={editInvoiceData.description}
+                          onChange={(e) => setEditInvoiceData({ ...editInvoiceData, description: e.target.value })}
+                          placeholder="Invoice description"
+                        />
+                        <div className="currency-input-wrapper">
+                          <span className="currency-symbol">$</span>
+                          <input
+                            type="text"
+                            value={editInvoiceData.amount}
+                            onChange={(e) => setEditInvoiceData({ ...editInvoiceData, amount: formatCurrencyInput(e.target.value) })}
+                            placeholder="0.00"
+                            className="currency-input"
+                          />
                         </div>
-                        
-                        {/* PAYMENT LINK */}
-                        {invoice.payment_link && (
-                          <a 
-                            href={invoice.payment_link} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="payment-link-btn"
+                        <select
+                          value={editInvoiceData.status}
+                          onChange={(e) => setEditInvoiceData({ ...editInvoiceData, status: e.target.value })}
+                        >
+                          <option value="draft">Draft</option>
+                          <option value="sent">Sent</option>
+                          <option value="paid">Paid</option>
+                        </select>
+                        <div className="edit-buttons">
+                          <button 
+                            className="save-btn"
+                            onClick={() => handleSaveInvoice(invoice.id)}
                           >
-                            💳 Pay Now
-                          </a>
-                        )}
+                            Save
+                          </button>
+                          <button 
+                            className="cancel-btn"
+                            onClick={handleCancelInvoiceEdit}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="invoice-header-row">
+                          <div className="invoice-info">
+                            <strong>Invoice #{invoice.invoice_number}</strong>
+                            <p>{invoice.description}</p>
+                            <div className="invoice-details">
+                              <span className="date">{invoice.date ? new Date(invoice.date).toLocaleDateString() : ''}</span>
+                              <span className={`status status-${invoice.status}`}>{invoice.status}</span>
+                              <strong className="amount">{formatCurrencyDisplay(invoice.amount)}</strong>
+                            </div>
+                            
+                            {/* PAYMENT LINK */}
+                            {invoice.payment_link && (
+                              <a 
+                                href={invoice.payment_link} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="payment-link-btn"
+                              >
+                                💳 Pay Now
+                              </a>
+                            )}
 
-                        {/* FILE UPLOAD & DISPLAY */}
-                        <div className="invoice-file-section">
-                          <div className="file-display">
-                            {invoice.file_name && (
-                              <>
-                                <a 
-                                  href={invoice.file_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="file-link"
-                                >
-                                  📄 {invoice.file_name}
-                                </a>
-                              </>
+                            {/* FILE UPLOAD & DISPLAY */}
+                            <div className="invoice-file-section">
+                              <div className="file-display">
+                                {invoice.file_name && (
+                                  <>
+                                    <a 
+                                      href={invoice.file_url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="file-link"
+                                    >
+                                      📄 {invoice.file_name}
+                                    </a>
+                                  </>
+                                )}
+                              </div>
+
+                              {uploadingInvoiceId === invoice.id ? (
+                                <span className="uploading">Uploading...</span>
+                              ) : (
+                                <label className="file-upload-label">
+                                  <input
+                                    type="file"
+                                    onChange={(e) => {
+                                      if (e.target.files[0]) {
+                                        handleFileUpload(invoice.id, e.target.files[0]);
+                                      }
+                                    }}
+                                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+                                    style={{ display: 'none' }}
+                                  />
+                                  📎 {invoice.file_name ? 'Replace File' : 'Attach File'}
+                                </label>
+                              )}
+                            </div>
+                          </div>
+                          <div className="invoice-actions">
+                            <button 
+                              className="pencil-btn"
+                              onClick={() => handleEditInvoice(invoice)}
+                              title="Edit invoice"
+                            >
+                              ✏️
+                            </button>
+                            <button 
+                              className="delete-btn"
+                              title="Delete invoice"
+                              onClick={() => {
+                                if (deletingInvoiceId === invoice.id) {
+                                  handleDeleteInvoice(invoice.id);
+                                } else {
+                                  setDeletingInvoiceId(invoice.id);
+                                }
+                              }}
+                            >
+                              {deletingInvoiceId === invoice.id ? '✓' : '🗑️'}
+                            </button>
+                            {deletingInvoiceId === invoice.id && (
+                              <button 
+                                className="cancel-delete-btn"
+                                onClick={() => setDeletingInvoiceId(null)}
+                              >
+                                ✕
+                              </button>
                             )}
                           </div>
-
-                          {uploadingInvoiceId === invoice.id ? (
-                            <span className="uploading">Uploading...</span>
-                          ) : (
-                            <label className="file-upload-label">
-                              <input
-                                type="file"
-                                onChange={(e) => {
-                                  if (e.target.files[0]) {
-                                    handleFileUpload(invoice.id, e.target.files[0]);
-                                  }
-                                }}
-                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
-                                style={{ display: 'none' }}
-                              />
-                              📎 {invoice.file_name ? 'Replace File' : 'Attach File'}
-                            </label>
-                          )}
                         </div>
                       </div>
-                      <div className="invoice-actions">
-                        <button 
-                          className="delete-btn"
-                          title="Delete invoice"
-                          onClick={() => {
-                            if (deletingInvoiceId === invoice.id) {
-                              handleDeleteInvoice(invoice.id);
-                            } else {
-                              setDeletingInvoiceId(invoice.id);
-                            }
-                          }}
-                        >
-                          {deletingInvoiceId === invoice.id ? '✓' : '🗑️'}
-                        </button>
-                        {deletingInvoiceId === invoice.id && (
-                          <button 
-                            className="cancel-delete-btn"
-                            onClick={() => setDeletingInvoiceId(null)}
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -835,11 +959,18 @@ function ProjectDetail() {
                 placeholder="Invoice description..." 
                 id="invoice-desc"
               />
-              <input 
-                type="number" 
-                placeholder="Amount ($)" 
-                id="invoice-amount"
-              />
+              <div className="currency-input-wrapper">
+                <span className="currency-symbol">$</span>
+                <input 
+                  type="text" 
+                  placeholder="0.00" 
+                  id="invoice-amount"
+                  onChange={(e) => {
+                    e.target.value = formatCurrencyInput(e.target.value);
+                  }}
+                  className="currency-input"
+                />
+              </div>
               <input 
                 type="url" 
                 placeholder="Payment link (optional)" 
