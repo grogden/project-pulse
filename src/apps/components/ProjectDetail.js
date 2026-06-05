@@ -15,52 +15,52 @@ function ProjectDetail() {
   const [deletingInvoiceId, setDeletingInvoiceId] = useState(null);
 
   useEffect(() => {
+    const fetchProjectData = async () => {
+      setLoading(true);
+      
+      // Fetch project
+      const { data: projectData, error: projectError } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', projectId)
+        .single();
+
+      if (projectError) {
+        console.error('Error fetching project:', projectError);
+        setLoading(false);
+        return;
+      }
+
+      setProject(projectData);
+      document.title = `${projectData.name} - Project Pulse`;
+
+      // Fetch quotes
+      const { data: quotesData, error: quotesError } = await supabase
+        .from('quotes')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+      if (!quotesError) {
+        setQuotes(quotesData || []);
+      }
+
+      // Fetch invoices
+      const { data: invoicesData, error: invoicesError } = await supabase
+        .from('invoices')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+
+      if (!invoicesError) {
+        setInvoices(invoicesData || []);
+      }
+
+      setLoading(false);
+    };
+
     fetchProjectData();
   }, [projectId]);
-
-  const fetchProjectData = async () => {
-    setLoading(true);
-    
-    // Fetch project
-    const { data: projectData, error: projectError } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', projectId)
-      .single();
-
-    if (projectError) {
-      console.error('Error fetching project:', projectError);
-      setLoading(false);
-      return;
-    }
-
-    setProject(projectData);
-    document.title = `${projectData.name} - Project Pulse`;
-
-    // Fetch quotes
-    const { data: quotesData, error: quotesError } = await supabase
-      .from('quotes')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('created_at', { ascending: false });
-
-    if (!quotesError) {
-      setQuotes(quotesData || []);
-    }
-
-    // Fetch invoices
-    const { data: invoicesData, error: invoicesError } = await supabase
-      .from('invoices')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('created_at', { ascending: false });
-
-    if (!invoicesError) {
-      setInvoices(invoicesData || []);
-    }
-
-    setLoading(false);
-  };
 
   const handleAddQuote = async () => {
     const desc = document.getElementById('quote-desc').value;
