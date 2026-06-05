@@ -1,0 +1,21 @@
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Sidebar from '../Sidebar';
+import ProjectList from './components/ProjectList';
+import ProjectDetail from './components/ProjectDetail';
+
+function QuoteBuilderApp() {
+  return (
+    <div className="app-container">
+      <Sidebar appName="Quote Builder" />
+      <div className="app-content">
+        <Routes>
+          <Route path="/" element={<ProjectList />} />
+          <Route path="/project/:projectId" element={<ProjectDetail />} />
+        </Routes>
+      </div>
+    </div>
+  );
+}
+
+export default QuoteBuilderApp;
