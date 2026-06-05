@@ -15,6 +15,9 @@ function ProjectDetail() {
   const [deletingQuoteId, setDeletingQuoteId] = useState(null);
   const [deletingInvoiceId, setDeletingInvoiceId] = useState(null);
   const [projectData, setProjectData] = useState({});
+  const [uploadingInvoiceId, setUploadingInvoiceId] = useState(null);
+  const [uploadingNewInvoice, setUploadingNewInvoice] = useState(false);
+  const [selectedInvoiceFile, setSelectedInvoiceFile] = useState(null);
   
   // Collapsible sections
   const [showProjectInfo, setShowProjectInfo] = useState(false);
@@ -199,11 +202,48 @@ function ProjectDetail() {
     const desc = document.getElementById('invoice-desc').value;
     const amount = document.getElementById('invoice-amount').value;
     const status = document.getElementById('invoice-status').value;
+    const paymentLink = document.getElementById('invoice-payment-link').value;
 
     if (!desc || !amount) return;
 
-    const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
+    setUploadingNewInvoice(true);
 
+    const invoiceNumber = `INV-${Date.now().toString().slice(-6)}`;
+    let fileUrl = null;
+    let fileName = null;
+
+    // Upload file if selected
+    if (selectedInvoiceFile) {
+      try {
+        const fileExt = selectedInvoiceFile.name.split('.').pop();
+        const fileStorageName = `${projectId}_${invoiceNumber}_${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('invoice-files')
+          .upload(fileStorageName, selectedInvoiceFile);
+
+        if (uploadError) {
+          console.error('Error uploading file:', uploadError);
+          alert('Error uploading file');
+          setUploadingNewInvoice(false);
+          return;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('invoice-files')
+          .getPublicUrl(fileStorageName);
+
+        fileUrl = publicUrl;
+        fileName = selectedInvoiceFile.name;
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error uploading file');
+        setUploadingNewInvoice(false);
+        return;
+      }
+    }
+
+    // Create invoice
     const { data, error } = await supabase
       .from('invoices')
       .insert([
@@ -212,19 +252,87 @@ function ProjectDetail() {
           invoice_number: invoiceNumber,
           description: desc,
           amount: parseFloat(amount),
-          status: status
+          status: status,
+          payment_link: paymentLink || null,
+          file_url: fileUrl,
+          file_name: fileName
         }
       ])
       .select();
 
     if (error) {
       console.error('Error adding invoice:', error);
+      alert('Error adding invoice');
+      setUploadingNewInvoice(false);
       return;
     }
 
     setInvoices([data[0], ...invoices]);
     document.getElementById('invoice-desc').value = '';
     document.getElementById('invoice-amount').value = '';
+    document.getElementById('invoice-payment-link').value = '';
+    setSelectedInvoiceFile(null);
+    document.getElementById('invoice-file-input').value = '';
+    setUploadingNewInvoice(false);
+  };
+
+  const handleFileUpload = async (invoiceId, file) => {
+    if (!file) return;
+
+    setUploadingInvoiceId(invoiceId);
+
+    try {
+      // Create unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${projectId}_${invoiceId}_${Date.now()}.${fileExt}`;
+
+      // Upload to Supabase Storage
+      const { data, error: uploadError } = await supabase.storage
+        .from('invoice-files')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error('Error uploading file:', uploadError);
+        alert('Error uploading file');
+        setUploadingInvoiceId(null);
+        return;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('invoice-files')
+        .getPublicUrl(fileName);
+
+      // Update invoice with file info
+      const { error: updateError } = await supabase
+        .from('invoices')
+        .update({
+          file_url: publicUrl,
+          file_name: file.name
+        })
+        .eq('id', invoiceId);
+
+      if (updateError) {
+        console.error('Error updating invoice:', updateError);
+        alert('Error saving file reference');
+        setUploadingInvoiceId(null);
+        return;
+      }
+
+      // Update local state
+      setInvoices(invoices.map(inv => 
+        inv.id === invoiceId 
+          ? { ...inv, file_url: publicUrl, file_name: file.name }
+          : inv
+      ));
+
+      setUploadingInvoiceId(null);
+      alert('File uploaded successfully');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error uploading file');
+      setUploadingInvoiceId(null);
+    }
   };
 
   const handleDeleteInvoice = async (invoiceId) => {
@@ -642,6 +750,54 @@ function ProjectDetail() {
                           <span className={`status status-${invoice.status}`}>{invoice.status}</span>
                           <strong className="amount">${formatBudgetDisplay(invoice.amount)}</strong>
                         </div>
+                        
+                        {/* PAYMENT LINK */}
+                        {invoice.payment_link && (
+                          <a 
+                            href={invoice.payment_link} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="payment-link-btn"
+                          >
+                            💳 Pay Now
+                          </a>
+                        )}
+
+                        {/* FILE UPLOAD & DISPLAY */}
+                        <div className="invoice-file-section">
+                          <div className="file-display">
+                            {invoice.file_name && (
+                              <>
+                                <a 
+                                  href={invoice.file_url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="file-link"
+                                >
+                                  📄 {invoice.file_name}
+                                </a>
+                              </>
+                            )}
+                          </div>
+
+                          {uploadingInvoiceId === invoice.id ? (
+                            <span className="uploading">Uploading...</span>
+                          ) : (
+                            <label className="file-upload-label">
+                              <input
+                                type="file"
+                                onChange={(e) => {
+                                  if (e.target.files[0]) {
+                                    handleFileUpload(invoice.id, e.target.files[0]);
+                                  }
+                                }}
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+                                style={{ display: 'none' }}
+                              />
+                              📎 {invoice.file_name ? 'Replace File' : 'Attach File'}
+                            </label>
+                          )}
+                        </div>
                       </div>
                       <div className="invoice-actions">
                         <button 
@@ -685,12 +841,29 @@ function ProjectDetail() {
                 placeholder="Amount ($)" 
                 id="invoice-amount"
               />
+              <input 
+                type="url" 
+                placeholder="Payment link (optional)" 
+                id="invoice-payment-link"
+              />
               <select id="invoice-status" defaultValue="draft">
                 <option value="draft">Draft</option>
                 <option value="sent">Sent</option>
                 <option value="paid">Paid</option>
               </select>
-              <button onClick={handleAddInvoice}>Add Invoice</button>
+              <label className="invoice-file-input-label">
+                <input
+                  type="file"
+                  id="invoice-file-input"
+                  onChange={(e) => setSelectedInvoiceFile(e.target.files[0])}
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+                  style={{ display: 'none' }}
+                />
+                📎 {selectedInvoiceFile ? selectedInvoiceFile.name : 'Choose File (Optional)'}
+              </label>
+              <button onClick={handleAddInvoice} disabled={uploadingNewInvoice}>
+                {uploadingNewInvoice ? 'Adding Invoice...' : 'Add Invoice'}
+              </button>
             </div>
           </div>
         )}
