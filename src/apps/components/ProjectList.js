@@ -42,26 +42,6 @@ function ProjectList() {
 
   // Apply filters whenever projects or filter criteria change
   useEffect(() => {
-    applyFilters();
-  }, [projects, filterStatus, searchName, searchClient, searchEmail, searchPhone, searchCity, searchState]);
-
-  const fetchProjects = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error fetching projects:', error);
-      setLoading(false);
-      return;
-    }
-    setProjects(data || []);
-    setLoading(false);
-  };
-
-  const applyFilters = () => {
     let filtered = projects;
 
     // Filter by status
@@ -107,6 +87,22 @@ function ProjectList() {
     }
 
     setFilteredProjects(filtered);
+  }, [projects, filterStatus, searchName, searchClient, searchEmail, searchPhone, searchCity, searchState]);
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching projects:', error);
+      setLoading(false);
+      return;
+    }
+    setProjects(data || []);
+    setLoading(false);
   };
 
   const handleStatusToggle = (statusValue) => {
