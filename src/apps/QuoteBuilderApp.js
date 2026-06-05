@@ -7,7 +7,7 @@ import ProjectDetail from './components/ProjectDetail';
 function QuoteBuilderApp() {
   return (
     <div className="app-container">
-      <Sidebar appName="Quote Builder" />
+      <Sidebar appName="Project Pulse" />
       <div className="app-content">
         <Routes>
           <Route path="/" element={<ProjectList />} />

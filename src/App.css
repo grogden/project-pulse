@@ -812,20 +812,21 @@ li {
 /* PROJECT DETAIL HEADER */
 .project-detail-header {
   display: flex;
-  align-items: flex-start;
-  gap: 15px;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 30px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  width: 100%;
 }
 
 .back-btn {
-  padding: 10px 15px;
+  padding: 10px 12px;
   background-color: #6c757d;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   min-height: 44px;
   white-space: nowrap;
@@ -840,6 +841,8 @@ li {
   margin: 0;
   flex: 1;
   min-width: 0;
+  word-break: break-word;
+  font-size: 24px;
 }
 
 /* PROJECT EDIT SECTION */
@@ -1040,12 +1043,160 @@ li {
 .app-container {
   display: flex;
   position: relative;
+  min-height: 100vh;
 }
 
 .app-content {
   flex: 1;
   width: 100%;
   overflow-x: hidden;
+  padding: 20px;
+}
+
+/* LOGIN PAGE STYLES */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.login-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-card h1 {
+  margin: 0 0 10px 0;
+  font-size: 28px;
+  color: #333;
+  text-align: center;
+}
+
+.login-card h2 {
+  margin: 0 0 30px 0;
+  font-size: 20px;
+  color: #666;
+  text-align: center;
+  font-weight: normal;
+}
+
+.login-card .form-group {
+  margin-bottom: 20px;
+}
+
+.login-card .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+}
+
+.login-card .form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.login-card .form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.login-card .form-group input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  min-height: 44px;
+  margin-top: 10px;
+}
+
+.login-btn:hover:not(:disabled) {
+  background-color: #5568d3;
+}
+
+.login-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border-left: 4px solid #c33;
+  font-size: 14px;
+}
+
+.success-message {
+  background-color: #efe;
+  color: #3c3;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border-left: 4px solid #3c3;
+  font-size: 14px;
+}
+
+.toggle-auth {
+  text-align: center;
+  margin: 20px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.toggle-auth button {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: underline;
+  padding: 0;
+  font-size: 14px;
+}
+
+.toggle-auth button:hover {
+  color: #5568d3;
+}
+
+.login-info {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  text-align: center;
+  font-size: 13px;
+  color: #999;
+}
+
+.login-info p {
+  margin: 8px 0;
 }
 
 /* TABLET & LARGER SCREENS */
@@ -1182,6 +1333,15 @@ li {
   .invoice-edit-mode .currency-input-wrapper {
     flex: 1;
   }
+
+  .app-container {
+    display: flex;
+  }
+
+  .app-content {
+    flex: 1;
+    margin-left: 250px;
+  }
 }
 
 /* DESKTOP */
@@ -1291,5 +1451,21 @@ li {
   .invoice-edit-mode select,
   .invoice-edit-mode .currency-input-wrapper {
     width: 100%;
+  }
+
+  .login-card {
+    padding: 30px 20px;
+  }
+
+  .login-card h1 {
+    font-size: 24px;
+  }
+
+  .login-card h2 {
+    font-size: 18px;
+  }
+
+  .app-content {
+    padding: 15px;
   }
 }

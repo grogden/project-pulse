@@ -20,7 +20,7 @@ function ProjectDetail() {
   const [uploadingInvoiceId, setUploadingInvoiceId] = useState(null);
   const [uploadingNewInvoice, setUploadingNewInvoice] = useState(false);
   const [selectedInvoiceFile, setSelectedInvoiceFile] = useState(null);
-  
+
   // Collapsible sections
   const [showProjectInfo, setShowProjectInfo] = useState(false);
   const [showQuotes, setShowQuotes] = useState(true);
@@ -29,7 +29,7 @@ function ProjectDetail() {
   useEffect(() => {
     const fetchProjectData = async () => {
       setLoading(true);
-      
+
       // Fetch project
       const { data: projectDataResponse, error: projectError } = await supabase
         .from('projects')
@@ -88,9 +88,7 @@ function ProjectDetail() {
   };
 
   const formatCurrencyInput = (value) => {
-    // Remove non-numeric characters except decimal
     const cleaned = value.replace(/[^\d.]/g, '');
-    // Ensure only one decimal point
     const parts = cleaned.split('.');
     if (parts.length > 2) {
       return parts[0] + '.' + parts.slice(1).join('');
@@ -188,8 +186,8 @@ function ProjectDetail() {
       return;
     }
 
-    setQuotes(quotes.map(q => 
-      q.id === quoteId 
+    setQuotes(quotes.map(q =>
+      q.id === quoteId
         ? { ...q, description: editQuoteData.description, amount: parseFloat(editQuoteData.amount) }
         : q
     ));
@@ -229,8 +227,8 @@ function ProjectDetail() {
       return;
     }
 
-    setInvoices(invoices.map(inv => 
-      inv.id === invoiceId 
+    setInvoices(invoices.map(inv =>
+      inv.id === invoiceId
         ? { ...inv, description: editInvoiceData.description, amount: parseFloat(editInvoiceData.amount), status: editInvoiceData.status }
         : inv
     ));
@@ -343,11 +341,9 @@ function ProjectDetail() {
     setUploadingInvoiceId(invoiceId);
 
     try {
-      // Create unique filename
       const fileExt = file.name.split('.').pop();
       const fileName = `${projectId}_${invoiceId}_${Date.now()}.${fileExt}`;
 
-      // Upload to Supabase Storage
       const { data, error: uploadError } = await supabase.storage
         .from('invoice-files')
         .upload(fileName, file);
@@ -359,12 +355,10 @@ function ProjectDetail() {
         return;
       }
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('invoice-files')
         .getPublicUrl(fileName);
 
-      // Update invoice with file info
       const { error: updateError } = await supabase
         .from('invoices')
         .update({
@@ -380,9 +374,8 @@ function ProjectDetail() {
         return;
       }
 
-      // Update local state
-      setInvoices(invoices.map(inv => 
-        inv.id === invoiceId 
+      setInvoices(invoices.map(inv =>
+        inv.id === invoiceId
           ? { ...inv, file_url: publicUrl, file_name: file.name }
           : inv
       ));
@@ -429,14 +422,14 @@ function ProjectDetail() {
       {/* PROJECT INFO SECTION - COLLAPSIBLE */}
       <div className="collapsible-section">
         <div className="section-header-row">
-          <button 
+          <button
             className="section-toggle-btn"
             onClick={() => setShowProjectInfo(!showProjectInfo)}
           >
             {showProjectInfo ? '▼' : '▶'} Project Information
           </button>
           {!editingProject && (
-            <button 
+            <button
               className="pencil-btn"
               onClick={() => setEditingProject(!editingProject)}
               title="Edit project"
@@ -550,8 +543,8 @@ function ProjectDetail() {
               <div className="form-row">
                 <div className="form-group">
                   <label>Status</label>
-                  <select 
-                    value={projectData.status || 'not started'} 
+                  <select
+                    value={projectData.status || 'not started'}
                     onChange={(e) => setProjectData({ ...projectData, status: e.target.value })}
                   >
                     <option value="not started">Not Started</option>
@@ -612,63 +605,79 @@ function ProjectDetail() {
             </div>
           ) : (
             <div className="project-info-section">
+              <h3>Basic Information</h3>
               <div className="info-grid">
                 <div className="info-item">
-                  <label>Client:</label>
-                  <p>{project.client}</p>
+                  <label>Project Name:</label>
+                  <p>{project.name || 'N/A'}</p>
                 </div>
-                {project.email && (
-                  <div className="info-item">
-                    <label>Email:</label>
-                    <p>{project.email}</p>
-                  </div>
-                )}
-                {project.phone && (
-                  <div className="info-item">
-                    <label>Phone:</label>
-                    <p>{project.phone}</p>
-                  </div>
-                )}
-                {project.street_address && (
-                  <div className="info-item">
-                    <label>Address:</label>
-                    <p>
-                      {project.street_address}
-                      {project.city && `, ${project.city}`}
-                      {project.state && `, ${project.state}`}
-                      {project.zip_code && ` ${project.zip_code}`}
-                      {project.country && `, ${project.country}`}
-                    </p>
-                  </div>
-                )}
-                {project.status && (
-                  <div className="info-item">
-                    <label>Status:</label>
-                    <span className={`status status-${project.status}`}>{project.status}</span>
-                  </div>
-                )}
-                {project.start_date && (
-                  <div className="info-item">
-                    <label>Start Date:</label>
-                    <p>{new Date(project.start_date).toLocaleDateString()}</p>
-                  </div>
-                )}
-                {project.due_date && (
-                  <div className="info-item">
-                    <label>Due Date:</label>
-                    <p>{new Date(project.due_date).toLocaleDateString()}</p>
-                  </div>
-                )}
-                {project.budget && (
-                  <div className="info-item">
-                    <label>Budget:</label>
-                    <p>${formatBudgetDisplay(project.budget)}</p>
-                  </div>
-                )}
+                <div className="info-item">
+                  <label>Client Name:</label>
+                  <p>{project.client || 'N/A'}</p>
+                </div>
               </div>
+
+              <h3>Contact Information</h3>
+              <div className="info-grid">
+                <div className="info-item">
+                  <label>Email:</label>
+                  <p>{project.email || 'Not provided'}</p>
+                </div>
+                <div className="info-item">
+                  <label>Phone:</label>
+                  <p>{project.phone || 'Not provided'}</p>
+                </div>
+              </div>
+
+              <h3>Address</h3>
+              <div className="info-grid">
+                <div className="info-item" style={{ gridColumn: '1 / -1' }}>
+                  <label>Street Address:</label>
+                  <p>{project.street_address || 'Not provided'}</p>
+                </div>
+                <div className="info-item">
+                  <label>City:</label>
+                  <p>{project.city || 'Not provided'}</p>
+                </div>
+                <div className="info-item">
+                  <label>State:</label>
+                  <p>{project.state || 'Not provided'}</p>
+                </div>
+                <div className="info-item">
+                  <label>Zip Code:</label>
+                  <p>{project.zip_code || 'Not provided'}</p>
+                </div>
+                <div className="info-item">
+                  <label>Country:</label>
+                  <p>{project.country || 'Not provided'}</p>
+                </div>
+              </div>
+
+              <h3>Project Details</h3>
+              <div className="info-grid">
+                <div className="info-item">
+                  <label>Status:</label>
+                  <span className={`status status-${project.status}`}>
+                    {project.status || 'N/A'}
+                  </span>
+                </div>
+                <div className="info-item">
+                  <label>Start Date:</label>
+                  <p>{project.start_date ? new Date(project.start_date).toLocaleDateString() : 'Not provided'}</p>
+                </div>
+                <div className="info-item">
+                  <label>Due Date:</label>
+                  <p>{project.due_date ? new Date(project.due_date).toLocaleDateString() : 'Not provided'}</p>
+                </div>
+                <div className="info-item">
+                  <label>Budget:</label>
+                  <p>{project.budget ? `$${formatBudgetDisplay(project.budget)}` : 'Not provided'}</p>
+                </div>
+              </div>
+
               {project.notes && (
                 <div className="notes-section">
-                  <label>Notes:</label>
+                  <h3>Notes</h3>
                   <p>{project.notes}</p>
                 </div>
               )}
@@ -679,7 +688,7 @@ function ProjectDetail() {
 
       {/* QUOTES SECTION - COLLAPSIBLE */}
       <div className="collapsible-section">
-        <button 
+        <button
           className="section-toggle-btn"
           onClick={() => setShowQuotes(!showQuotes)}
         >
@@ -711,13 +720,13 @@ function ProjectDetail() {
                           />
                         </div>
                         <div className="edit-buttons">
-                          <button 
+                          <button
                             className="save-btn"
                             onClick={() => handleSaveQuote(quote.id)}
                           >
                             Save
                           </button>
-                          <button 
+                          <button
                             className="cancel-btn"
                             onClick={handleCancelEdit}
                           >
@@ -734,14 +743,14 @@ function ProjectDetail() {
                             <span className="date">{quote.date ? new Date(quote.date).toLocaleDateString() : ''}</span>
                           </div>
                           <div className="quote-actions">
-                            <button 
+                            <button
                               className="pencil-btn"
                               onClick={() => handleEditQuote(quote)}
                               title="Edit quote"
                             >
                               ✏️
                             </button>
-                            <button 
+                            <button
                               className="delete-btn"
                               title="Delete quote"
                               onClick={() => {
@@ -755,7 +764,7 @@ function ProjectDetail() {
                               {deletingQuoteId === quote.id ? '✓' : '🗑️'}
                             </button>
                             {deletingQuoteId === quote.id && (
-                              <button 
+                              <button
                                 className="cancel-delete-btn"
                                 onClick={() => setDeletingQuoteId(null)}
                               >
@@ -772,18 +781,18 @@ function ProjectDetail() {
             ) : (
               <p>No quotes yet.</p>
             )}
-            
+
             <div className="add-quote-form">
-              <input 
-                type="text" 
-                placeholder="Quote description..." 
+              <input
+                type="text"
+                placeholder="Quote description..."
                 id="quote-desc"
               />
               <div className="currency-input-wrapper">
                 <span className="currency-symbol">$</span>
-                <input 
-                  type="text" 
-                  placeholder="0.00" 
+                <input
+                  type="text"
+                  placeholder="0.00"
                   id="quote-amount"
                   onChange={(e) => {
                     e.target.value = formatCurrencyInput(e.target.value);
@@ -799,7 +808,7 @@ function ProjectDetail() {
 
       {/* INVOICES SECTION - COLLAPSIBLE */}
       <div className="collapsible-section">
-        <button 
+        <button
           className="section-toggle-btn"
           onClick={() => setShowInvoices(!showInvoices)}
         >
@@ -839,13 +848,13 @@ function ProjectDetail() {
                           <option value="paid">Paid</option>
                         </select>
                         <div className="edit-buttons">
-                          <button 
+                          <button
                             className="save-btn"
                             onClick={() => handleSaveInvoice(invoice.id)}
                           >
                             Save
                           </button>
-                          <button 
+                          <button
                             className="cancel-btn"
                             onClick={handleCancelInvoiceEdit}
                           >
@@ -864,12 +873,12 @@ function ProjectDetail() {
                               <span className={`status status-${invoice.status}`}>{invoice.status}</span>
                               <strong className="amount">{formatCurrencyDisplay(invoice.amount)}</strong>
                             </div>
-                            
+
                             {/* PAYMENT LINK */}
                             {invoice.payment_link && (
-                              <a 
-                                href={invoice.payment_link} 
-                                target="_blank" 
+                              <a
+                                href={invoice.payment_link}
+                                target="_blank"
                                 rel="noopener noreferrer"
                                 className="payment-link-btn"
                               >
@@ -882,9 +891,9 @@ function ProjectDetail() {
                               <div className="file-display">
                                 {invoice.file_name && (
                                   <>
-                                    <a 
-                                      href={invoice.file_url} 
-                                      target="_blank" 
+                                    <a
+                                      href={invoice.file_url}
+                                      target="_blank"
                                       rel="noopener noreferrer"
                                       className="file-link"
                                     >
@@ -914,14 +923,14 @@ function ProjectDetail() {
                             </div>
                           </div>
                           <div className="invoice-actions">
-                            <button 
+                            <button
                               className="pencil-btn"
                               onClick={() => handleEditInvoice(invoice)}
                               title="Edit invoice"
                             >
                               ✏️
                             </button>
-                            <button 
+                            <button
                               className="delete-btn"
                               title="Delete invoice"
                               onClick={() => {
@@ -935,7 +944,7 @@ function ProjectDetail() {
                               {deletingInvoiceId === invoice.id ? '✓' : '🗑️'}
                             </button>
                             {deletingInvoiceId === invoice.id && (
-                              <button 
+                              <button
                                 className="cancel-delete-btn"
                                 onClick={() => setDeletingInvoiceId(null)}
                               >
@@ -952,18 +961,18 @@ function ProjectDetail() {
             ) : (
               <p>No invoices yet.</p>
             )}
-            
+
             <div className="add-invoice-form">
-              <input 
-                type="text" 
-                placeholder="Invoice description..." 
+              <input
+                type="text"
+                placeholder="Invoice description..."
                 id="invoice-desc"
               />
               <div className="currency-input-wrapper">
                 <span className="currency-symbol">$</span>
-                <input 
-                  type="text" 
-                  placeholder="0.00" 
+                <input
+                  type="text"
+                  placeholder="0.00"
                   id="invoice-amount"
                   onChange={(e) => {
                     e.target.value = formatCurrencyInput(e.target.value);
@@ -971,9 +980,9 @@ function ProjectDetail() {
                   className="currency-input"
                 />
               </div>
-              <input 
-                type="url" 
-                placeholder="Payment link (optional)" 
+              <input
+                type="url"
+                placeholder="Payment link (optional)"
                 id="invoice-payment-link"
               />
               <select id="invoice-status" defaultValue="draft">

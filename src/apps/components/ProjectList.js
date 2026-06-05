@@ -1,128 +1,76 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+import { AuthContext } from '../../AuthContext';
 
 function ProjectList() {
+  const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
-  const [projectName, setProjectName] = useState('');
-  const [clientName, setClientName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [streetAddress, setStreetAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [zipCode, setZipCode] = useState('');
-  const [country, setCountry] = useState('');
-  const [status, setStatus] = useState('not started');
-  const [startDate, setStartDate] = useState('');
-  const [dueDate, setDueDate] = useState('');
-  const [budget, setBudget] = useState('');
-  const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showAddProject, setShowAddProject] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
   const [deletingProjectId, setDeletingProjectId] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
-  
+
   // Filter states
-  const [filterStatus, setFilterStatus] = useState(['not started', 'in progress']); // Default: open projects
-  const [searchName, setSearchName] = useState('');
-  const [searchClient, setSearchClient] = useState('');
-  const [searchEmail, setSearchEmail] = useState('');
-  const [searchPhone, setSearchPhone] = useState('');
-  const [searchCity, setSearchCity] = useState('');
-  const [searchState, setSearchState] = useState('');
-  
-  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilters, setStatusFilters] = useState({
+    'not started': true,
+    'in progress': true,
+    'completed': false,
+    'on hold': false
+  });
 
   useEffect(() => {
-    document.title = 'Quote Builder - Project Pulse';
     fetchProjects();
-  }, []);
+  }, [user]);
 
-  // Apply filters whenever projects or filter criteria change
   useEffect(() => {
-    let filtered = projects;
-
-    // Filter by status
-    if (filterStatus.length > 0) {
-      filtered = filtered.filter(p => filterStatus.includes(p.status));
-    }
-
-    // Search filters (case-insensitive, partial match)
-    if (searchName) {
-      filtered = filtered.filter(p => 
-        p.name.toLowerCase().includes(searchName.toLowerCase())
-      );
-    }
-
-    if (searchClient) {
-      filtered = filtered.filter(p => 
-        p.client.toLowerCase().includes(searchClient.toLowerCase())
-      );
-    }
-
-    if (searchEmail) {
-      filtered = filtered.filter(p => 
-        p.email && p.email.toLowerCase().includes(searchEmail.toLowerCase())
-      );
-    }
-
-    if (searchPhone) {
-      filtered = filtered.filter(p => 
-        p.phone && p.phone.replace(/\D/g, '').includes(searchPhone.replace(/\D/g, ''))
-      );
-    }
-
-    if (searchCity) {
-      filtered = filtered.filter(p => 
-        p.city && p.city.toLowerCase().includes(searchCity.toLowerCase())
-      );
-    }
-
-    if (searchState) {
-      filtered = filtered.filter(p => 
-        p.state && p.state.toLowerCase().includes(searchState.toLowerCase())
-      );
-    }
-
-    setFilteredProjects(filtered);
-  }, [projects, filterStatus, searchName, searchClient, searchEmail, searchPhone, searchCity, searchState]);
+    applyFilters();
+  }, [projects, searchTerm, statusFilters]);
 
   const fetchProjects = async () => {
+    if (!user) return;
+
     setLoading(true);
     const { data, error } = await supabase
       .from('projects')
       .select('*')
+      .eq('contractor_id', user.id)
       .order('created_at', { ascending: false });
-    
+
     if (error) {
       console.error('Error fetching projects:', error);
-      setLoading(false);
-      return;
+    } else {
+      setProjects(data || []);
     }
-    setProjects(data || []);
     setLoading(false);
   };
 
-  const handleStatusToggle = (statusValue) => {
-    setFilterStatus(prev => {
-      if (prev.includes(statusValue)) {
-        return prev.filter(s => s !== statusValue);
-      } else {
-        return [...prev, statusValue];
-      }
-    });
-  };
+  const applyFilters = () => {
+    let filtered = projects;
 
-  const clearAllFilters = () => {
-    setFilterStatus(['not started', 'in progress']); // Reset to default
-    setSearchName('');
-    setSearchClient('');
-    setSearchEmail('');
-    setSearchPhone('');
-    setSearchCity('');
-    setSearchState('');
+    // Apply status filter
+    const selectedStatuses = Object.keys(statusFilters).filter(status => statusFilters[status]);
+    if (selectedStatuses.length > 0) {
+      filtered = filtered.filter(project => selectedStatuses.includes(project.status));
+    }
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(project =>
+        project.name.toLowerCase().includes(term) ||
+        project.client.toLowerCase().includes(term) ||
+        (project.email && project.email.toLowerCase().includes(term)) ||
+        (project.phone && project.phone.includes(term)) ||
+        (project.city && project.city.toLowerCase().includes(term)) ||
+        (project.state && project.state.toLowerCase().includes(term))
+      );
+    }
+
+    setFilteredProjects(filtered);
   };
 
   const formatPhoneNumber = (value) => {
@@ -133,8 +81,23 @@ function ProjectList() {
   };
 
   const handleAddProject = async () => {
-    if (projectName.trim() === '' || clientName.trim() === '') {
-      alert('Project name and client name are required');
+    const name = document.getElementById('project-name').value;
+    const client = document.getElementById('project-client').value;
+    const email = document.getElementById('project-email').value;
+    const phone = document.getElementById('project-phone').value;
+    const streetAddress = document.getElementById('project-street').value;
+    const city = document.getElementById('project-city').value;
+    const state = document.getElementById('project-state').value;
+    const zipCode = document.getElementById('project-zip').value;
+    const country = document.getElementById('project-country').value;
+    const status = document.getElementById('project-status').value;
+    const startDate = document.getElementById('project-start-date').value;
+    const dueDate = document.getElementById('project-due-date').value;
+    const budget = document.getElementById('project-budget').value;
+    const notes = document.getElementById('project-notes').value;
+
+    if (!name || !client) {
+      alert('Please enter project name and client name');
       return;
     }
 
@@ -142,16 +105,17 @@ function ProjectList() {
       .from('projects')
       .insert([
         {
-          name: projectName,
-          client: clientName,
-          phone: phone || null,
+          name,
+          client,
           email: email || null,
+          phone: phone || null,
           street_address: streetAddress || null,
           city: city || null,
           state: state || null,
           zip_code: zipCode || null,
           country: country || null,
-          status: status,
+          contractor_id: user.id,
+          status: status || 'not started',
           start_date: startDate || null,
           due_date: dueDate || null,
           budget: budget ? parseFloat(budget) : null,
@@ -161,36 +125,36 @@ function ProjectList() {
       .select();
 
     if (error) {
-      console.error('Error adding project:', error);
-      alert('Error adding project');
+      console.error('Error creating project:', error);
+      alert('Error creating project');
       return;
     }
 
     setProjects([data[0], ...projects]);
-    
-    // Reset form
-    setProjectName('');
-    setClientName('');
-    setPhone('');
-    setEmail('');
-    setStreetAddress('');
-    setCity('');
-    setState('');
-    setZipCode('');
-    setCountry('');
-    setStatus('not started');
-    setStartDate('');
-    setDueDate('');
-    setBudget('');
-    setNotes('');
-    setShowAddProject(false);
+    // Clear form
+    document.getElementById('project-name').value = '';
+    document.getElementById('project-client').value = '';
+    document.getElementById('project-email').value = '';
+    document.getElementById('project-phone').value = '';
+    document.getElementById('project-street').value = '';
+    document.getElementById('project-city').value = '';
+    document.getElementById('project-state').value = '';
+    document.getElementById('project-zip').value = '';
+    document.getElementById('project-country').value = '';
+    document.getElementById('project-status').value = 'not started';
+    document.getElementById('project-start-date').value = '';
+    document.getElementById('project-due-date').value = '';
+    document.getElementById('project-budget').value = '';
+    document.getElementById('project-notes').value = '';
+    setShowAddForm(false);
   };
 
   const handleDeleteProject = async (projectId) => {
     const { error } = await supabase
       .from('projects')
       .delete()
-      .eq('id', projectId);
+      .eq('id', projectId)
+      .eq('contractor_id', user.id);
 
     if (error) {
       console.error('Error deleting project:', error);
@@ -201,47 +165,49 @@ function ProjectList() {
     setDeletingProjectId(null);
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleAddProject();
-    }
+  const clearFilters = () => {
+    setSearchTerm('');
+    setStatusFilters({
+      'not started': true,
+      'in progress': true,
+      'completed': false,
+      'on hold': false
+    });
   };
 
   return (
-    <div className="App">
-      <h1>Projects</h1>
+    <div>
+      <h2>My Projects</h2>
 
-      {/* COLLAPSIBLE ADD PROJECT SECTION */}
+      {/* ADD PROJECT SECTION */}
       <div className="add-project-container">
-        <button 
+        <button
           className="toggle-add-project-btn"
-          onClick={() => setShowAddProject(!showAddProject)}
+          onClick={() => setShowAddForm(!showAddForm)}
         >
-          {showAddProject ? '▼ Hide' : '▶ Add Project'}
+          {showAddForm ? '▼ Close' : '▶ Add New Project'}
         </button>
 
-        {showAddProject && (
-          <div className="form-section add-project-form">
+        {showAddForm && (
+          <div className="add-project-form">
             <h3>Basic Information</h3>
             <div className="form-row">
               <div className="form-group">
                 <label>Project Name *</label>
                 <input
                   type="text"
-                  placeholder="Project name"
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  id="project-name"
+                  placeholder="Project name..."
+                  maxLength="100"
                 />
               </div>
               <div className="form-group">
                 <label>Client Name *</label>
                 <input
                   type="text"
-                  placeholder="Client name"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  id="project-client"
+                  placeholder="Client name..."
+                  maxLength="100"
                 />
               </div>
             </div>
@@ -252,18 +218,20 @@ function ProjectList() {
                 <label>Email</label>
                 <input
                   type="email"
+                  id="project-email"
                   placeholder="email@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="form-group">
                 <label>Phone</label>
                 <input
                   type="tel"
+                  id="project-phone"
                   placeholder="(123) 456-7890"
-                  value={phone}
-                  onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
+                  onChange={(e) => {
+                    const formatted = formatPhoneNumber(e.target.value);
+                    e.target.value = formatted;
+                  }}
                 />
               </div>
             </div>
@@ -274,39 +242,23 @@ function ProjectList() {
                 <label>Street Address</label>
                 <input
                   type="text"
+                  id="project-street"
                   placeholder="Street address"
-                  value={streetAddress}
-                  onChange={(e) => setStreetAddress(e.target.value)}
                 />
               </div>
             </div>
             <div className="form-row">
               <div className="form-group">
                 <label>City</label>
-                <input
-                  type="text"
-                  placeholder="City"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                />
+                <input type="text" id="project-city" placeholder="City" />
               </div>
               <div className="form-group">
                 <label>State</label>
-                <input
-                  type="text"
-                  placeholder="State"
-                  value={state}
-                  onChange={(e) => setState(e.target.value)}
-                />
+                <input type="text" id="project-state" placeholder="State" />
               </div>
               <div className="form-group">
                 <label>Zip Code</label>
-                <input
-                  type="text"
-                  placeholder="Zip code"
-                  value={zipCode}
-                  onChange={(e) => setZipCode(e.target.value)}
-                />
+                <input type="text" id="project-zip" placeholder="Zip code" />
               </div>
             </div>
             <div className="form-row">
@@ -314,9 +266,8 @@ function ProjectList() {
                 <label>Country</label>
                 <input
                   type="text"
+                  id="project-country"
                   placeholder="Country"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
                 />
               </div>
             </div>
@@ -325,30 +276,20 @@ function ProjectList() {
             <div className="form-row">
               <div className="form-group">
                 <label>Status</label>
-                <select value={status} onChange={(e) => setStatus(e.target.value)}>
+                <select id="project-status" defaultValue="not started">
                   <option value="not started">Not Started</option>
                   <option value="in progress">In Progress</option>
                   <option value="completed">Completed</option>
                   <option value="on hold">On Hold</option>
                 </select>
               </div>
-
               <div className="form-group">
                 <label>Start Date</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
+                <input type="date" id="project-start-date" />
               </div>
-
               <div className="form-group">
                 <label>Due Date</label>
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
+                <input type="date" id="project-due-date" />
               </div>
             </div>
 
@@ -357,9 +298,8 @@ function ProjectList() {
                 <label>Budget</label>
                 <input
                   type="number"
+                  id="project-budget"
                   placeholder="0.00"
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value)}
                   step="0.01"
                 />
               </div>
@@ -369,197 +309,125 @@ function ProjectList() {
               <div className="form-group" style={{ flex: '1' }}>
                 <label>Notes</label>
                 <textarea
+                  id="project-notes"
                   placeholder="Additional notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
                   rows="3"
                 />
               </div>
             </div>
 
-            <button onClick={handleAddProject} className="submit-btn">Add Project</button>
+            <button className="submit-btn" onClick={handleAddProject}>
+              Create Project
+            </button>
           </div>
         )}
       </div>
 
-      {/* COLLAPSIBLE FILTER SECTION */}
+      {/* FILTER SECTION */}
       <div className="filter-section">
-        <button 
+        <button
           className="toggle-filter-btn"
-          onClick={() => setShowFilters(!showFilters)}
+          onClick={() => setShowFilter(!showFilter)}
         >
-          {showFilters ? '▼ Hide Filters' : '▶ Show Filters'}
+          {showFilter ? '▼ Hide Filters' : '▶ Show Filters'}
         </button>
 
-        {showFilters && (
+        {showFilter && (
           <div className="filter-content">
             <div className="filter-header">
-              <button className="clear-filters-btn" onClick={clearAllFilters}>Clear All Filters</button>
+              <button className="clear-filters-btn" onClick={clearFilters}>
+                Clear Filters
+              </button>
             </div>
 
-            {/* Status Filter */}
+            <div className="filter-group">
+              <label className="filter-label">Search Projects</label>
+              <input
+                type="text"
+                className="filter-input"
+                placeholder="Search by name, client, email, phone, city..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
             <div className="filter-group">
               <label className="filter-label">Status</label>
               <div className="status-checkboxes">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={filterStatus.includes('not started')}
-                    onChange={() => handleStatusToggle('not started')}
-                  />
-                  Not Started
-                </label>
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={filterStatus.includes('in progress')}
-                    onChange={() => handleStatusToggle('in progress')}
-                  />
-                  In Progress
-                </label>
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={filterStatus.includes('completed')}
-                    onChange={() => handleStatusToggle('completed')}
-                  />
-                  Completed
-                </label>
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={filterStatus.includes('on hold')}
-                    onChange={() => handleStatusToggle('on hold')}
-                  />
-                  On Hold
-                </label>
-              </div>
-            </div>
-
-            {/* Search Filters */}
-            <div className="filter-row">
-              <div className="filter-group">
-                <label className="filter-label">Project Name</label>
-                <input
-                  type="text"
-                  placeholder="Search by name..."
-                  value={searchName}
-                  onChange={(e) => setSearchName(e.target.value)}
-                  className="filter-input"
-                />
-              </div>
-
-              <div className="filter-group">
-                <label className="filter-label">Client</label>
-                <input
-                  type="text"
-                  placeholder="Search by client..."
-                  value={searchClient}
-                  onChange={(e) => setSearchClient(e.target.value)}
-                  className="filter-input"
-                />
-              </div>
-
-              <div className="filter-group">
-                <label className="filter-label">Email</label>
-                <input
-                  type="text"
-                  placeholder="Search by email..."
-                  value={searchEmail}
-                  onChange={(e) => setSearchEmail(e.target.value)}
-                  className="filter-input"
-                />
-              </div>
-
-              <div className="filter-group">
-                <label className="filter-label">Phone</label>
-                <input
-                  type="text"
-                  placeholder="Search by phone..."
-                  value={searchPhone}
-                  onChange={(e) => setSearchPhone(e.target.value)}
-                  className="filter-input"
-                />
-              </div>
-            </div>
-
-            <div className="filter-row">
-              <div className="filter-group">
-                <label className="filter-label">City</label>
-                <input
-                  type="text"
-                  placeholder="Search by city..."
-                  value={searchCity}
-                  onChange={(e) => setSearchCity(e.target.value)}
-                  className="filter-input"
-                />
-              </div>
-
-              <div className="filter-group">
-                <label className="filter-label">State</label>
-                <input
-                  type="text"
-                  placeholder="Search by state..."
-                  value={searchState}
-                  onChange={(e) => setSearchState(e.target.value)}
-                  className="filter-input"
-                />
+                {['not started', 'in progress', 'completed', 'on hold'].map(status => (
+                  <label key={status} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={statusFilters[status]}
+                      onChange={(e) =>
+                        setStatusFilters({
+                          ...statusFilters,
+                          [status]: e.target.checked
+                        })
+                      }
+                    />
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </label>
+                ))}
               </div>
             </div>
           </div>
         )}
       </div>
 
+      {/* PROJECTS LIST */}
       <div className="projects-section">
-        <h2>Projects ({filteredProjects.length})</h2>
-        
         {loading ? (
-          <p>Loading...</p>
+          <p>Loading projects...</p>
         ) : filteredProjects.length === 0 ? (
-          <p>No projects match your filters.</p>
+          <p>
+            {projects.length === 0
+              ? 'No projects yet. Create one to get started!'
+              : 'No projects match your filters.'}
+          </p>
         ) : (
           <ul>
-            {filteredProjects.map((project) => (
-              <li key={project.id}>
-                <div 
-                  className="project-item"
-                  onClick={() => navigate(`/quote-builder/project/${project.id}`)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="project-header">
+            {filteredProjects.map(project => (
+              <li key={project.id} className="project-item">
+                <div className="project-header">
+                  <div>
+                    <strong onClick={() => navigate(`/quote-builder/project/${project.id}`)}
+                      style={{ cursor: 'pointer', color: '#007bff' }}>
+                      {project.name}
+                    </strong>
                     <div>
-                      <strong>{project.name}</strong>
-                      <span className="date">Client: {project.client}</span>
-                      {project.status && <span className={`status status-${project.status}`}>{project.status}</span>}
+                      <span>{project.client}</span>
+                    </div>
+                    <div>
+                      <span className={`status status-${project.status}`}>
+                        {project.status}
+                      </span>
                     </div>
                   </div>
-                  <div className="delete-actions">
-                    <button 
-                      className="delete-btn"
-                      title="Delete project"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (deletingProjectId === project.id) {
-                          handleDeleteProject(project.id);
-                        } else {
-                          setDeletingProjectId(project.id);
-                        }
-                      }}
+                </div>
+
+                <div className="delete-actions">
+                  <button
+                    className="delete-btn"
+                    title="Delete project"
+                    onClick={() => {
+                      if (deletingProjectId === project.id) {
+                        handleDeleteProject(project.id);
+                      } else {
+                        setDeletingProjectId(project.id);
+                      }
+                    }}
+                  >
+                    {deletingProjectId === project.id ? '✓' : '🗑️'}
+                  </button>
+                  {deletingProjectId === project.id && (
+                    <button
+                      className="cancel-delete-btn"
+                      onClick={() => setDeletingProjectId(null)}
                     >
-                      {deletingProjectId === project.id ? '✓' : '🗑️'}
+                      ✕
                     </button>
-                    {deletingProjectId === project.id && (
-                      <button 
-                        className="cancel-delete-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeletingProjectId(null);
-                        }}
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
+                  )}
                 </div>
               </li>
             ))}
