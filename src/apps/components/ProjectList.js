@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { AuthContext } from '../../AuthContext';
-import '../../pages/project-grid-styles.css';
+import '../../styles/project-grid-styles.css';
 
 function ProjectList() {
   const navigate = useNavigate();

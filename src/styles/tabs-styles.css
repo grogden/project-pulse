@@ -1,0 +1,156 @@
+/* Sticky Tabs Navigation */
+
+.tabs-navigation {
+  position: sticky;
+  top: 0;
+  background: white;
+  border-bottom: 2px solid #dee2e6;
+  z-index: 100;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tabs-container {
+  display: flex;
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  flex: 1;
+  min-width: 150px;
+  padding: 15px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.tab-btn.active {
+  color: #007bff;
+  border-bottom-color: #007bff;
+  background-color: transparent;
+}
+
+/* Tab Content Area */
+
+.tabs-content {
+  padding: 2rem;
+}
+
+.tab-pane {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Section Header with Edit Button */
+
+.section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.pencil-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px;
+  transition: transform 0.2s ease;
+}
+
+.pencil-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Responsive Tabs */
+
+@media (max-width: 768px) {
+  .tab-btn {
+    min-width: 120px;
+    padding: 12px 15px;
+    font-size: 0.9rem;
+  }
+
+  .tabs-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tab-btn {
+    min-width: 100px;
+    padding: 10px 12px;
+    font-size: 0.8rem;
+  }
+
+  .tabs-container {
+    overflow-x: scroll;
+  }
+
+  .tabs-content {
+    padding: 1rem;
+  }
+}
+
+/* Save Status Indicator */
+
+.save-status-indicator {
+  margin-bottom: 1.5rem;
+  height: 24px;
+}
+
+.status-text {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-text.saving {
+  background-color: #fff3cd;
+  color: #856404;
+  animation: pulse 1.5s infinite;
+}
+
+.status-text.saved {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-text.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}

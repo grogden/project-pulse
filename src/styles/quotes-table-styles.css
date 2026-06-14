@@ -1,0 +1,569 @@
+/* Quotes Table Styles */
+
+.quotes-table-wrapper {
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  width: 100%;
+}
+
+.quotes-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  background: white;
+  border: 1px solid #999;
+  table-layout: auto;
+}
+
+.quotes-table thead {
+  background: #f5f5f5;
+  border-bottom: 2px solid #999;
+}
+
+.quotes-table th {
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-right: 1px solid #999;
+  white-space: nowrap;
+}
+
+.quotes-table th:nth-child(1) {
+  width: 100px;
+  min-width: 100px;
+}
+
+.quotes-table th:nth-child(2) {
+  width: auto;
+  flex: 1;
+}
+
+.quotes-table th:nth-child(3) {
+  width: 140px;
+  min-width: 140px;
+  text-align: right;
+  padding-right: 40px;
+}
+
+.quotes-table th:nth-child(4) {
+  width: 70px;
+  min-width: 70px;
+  text-align: center;
+  border-right: none;
+}
+
+.quotes-table th.amount-col {
+  text-align: right;
+}
+
+.quotes-table th.actions-col {
+  text-align: center;
+}
+
+.quotes-table tbody tr {
+  border-bottom: 1px solid #ddd;
+  transition: background-color 0.2s ease;
+  height: 36px;
+}
+
+.quotes-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.quotes-table tbody tr.editing-row {
+  background-color: white;
+}
+
+.quotes-table td {
+  padding: 4px 8px;
+  vertical-align: middle;
+  color: #333;
+  border-right: 1px solid #ddd;
+  height: 36px;
+  overflow: visible;
+}
+
+.quotes-table td:nth-child(1) {
+  width: 100px;
+  min-width: 100px;
+  font-weight: 500;
+}
+
+.quotes-table td:nth-child(2) {
+  width: auto;
+  flex: 1;
+}
+
+.quotes-table td:nth-child(3) {
+  width: 140px;
+  min-width: 140px;
+  text-align: right;
+  padding-right: 8px;
+}
+
+.quotes-table td:nth-child(4) {
+  width: 70px;
+  min-width: 70px;
+  text-align: center;
+  border-right: none;
+  padding: 2px 4px;
+}
+
+.quotes-table td:last-child {
+  border-right: none;
+}
+
+.quotes-table td.amount-col {
+  text-align: right;
+  font-weight: 500;
+  color: #2d5016;
+}
+
+.quotes-table td.code-cell {
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  color: #555;
+}
+
+.quotes-table td.actions-col {
+  text-align: center;
+  white-space: nowrap;
+  padding: 2px 4px;
+}
+
+/* Table Input Styles (Edit Mode) */
+
+.quote-code-input,
+.quote-description-input {
+  width: 100%;
+  padding: 4px 6px;
+  margin: 0;
+  border: 1px solid #bbb;
+  border-radius: 0;
+  font-size: 0.9rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  height: 100%;
+  line-height: 1;
+  background: white;
+  color: #333;
+}
+
+.quote-code-input {
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+}
+
+.quote-description-input {
+  font-family: inherit;
+}
+
+.currency-input-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #bbb;
+  border-radius: 0;
+  background: white;
+}
+
+.currency-symbol {
+  font-size: 0.9rem;
+  color: #666;
+  padding: 0 6px;
+  white-space: nowrap;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.currency-input {
+  flex: 1;
+  padding: 0 6px;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  font-size: 0.9rem;
+  text-align: right;
+  box-sizing: border-box;
+  height: 100%;
+  line-height: 1;
+  background: white;
+  color: #333;
+  min-width: 0;
+  font-family: inherit;
+}
+
+.currency-input:focus,
+.quote-code-input:focus,
+.quote-description-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: inset 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+/* Quote Totals Styles */
+
+.quote-totals {
+  background: white;
+  border: 1px solid #999;
+  border-radius: 0;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  margin-top: 1rem;
+}
+
+.totals-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.totals-row:not(:last-child) {
+  border-bottom: 1px solid #eee;
+}
+
+.totals-label {
+  font-weight: 500;
+  color: #555;
+}
+
+.totals-amount {
+  font-weight: 600;
+  color: #333;
+  min-width: 120px;
+  text-align: right;
+}
+
+.totals-row.gc-fee {
+  background-color: transparent;
+  padding: 0.5rem 0;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+}
+
+.totals-row.gc-fee .totals-label {
+  color: #555;
+}
+
+.totals-row.gc-fee .totals-amount {
+  color: #333;
+}
+
+.totals-row.total {
+  background-color: transparent;
+  padding: 0.7rem 0;
+  margin-top: 0;
+  border-radius: 0;
+  font-size: 1rem;
+  border-top: 2px solid #333;
+}
+
+.totals-row.total .totals-label {
+  color: #333;
+  font-weight: 700;
+}
+
+.totals-row.total .totals-amount {
+  color: #333;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* Responsive Table */
+
+@media (max-width: 768px) {
+  .quotes-table {
+    font-size: 0.9rem;
+  }
+
+  .quotes-table th {
+    padding: 8px 6px;
+    font-size: 0.85rem;
+  }
+
+  .quotes-table td {
+    padding: 3px 4px;
+    height: auto;
+  }
+
+  .quote-code-input,
+  .quote-description-input,
+  .currency-input {
+    font-size: 0.9rem;
+    padding: 3px 4px;
+    height: 100%;
+    line-height: 1;
+  }
+
+  .currency-symbol {
+    font-size: 0.85rem;
+    padding: 0 3px;
+  }
+
+  .quote-totals {
+    padding: 0.75rem;
+  }
+
+  .totals-row {
+    font-size: 0.9rem;
+    padding: 0.3rem 0;
+  }
+
+  .totals-amount {
+    min-width: 80px;
+  }
+
+  .add-quote-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .quotes-table {
+    font-size: 0.85rem;
+    border: 1px solid #999;
+  }
+
+  .quotes-table th {
+    padding: 6px 4px;
+    font-size: 0.8rem;
+  }
+
+  .quotes-table th:nth-child(1) {
+    width: 60px;
+    min-width: 60px;
+  }
+
+  .quotes-table th:nth-child(2) {
+    width: auto;
+    flex: 1;
+  }
+
+  .quotes-table th:nth-child(3) {
+    width: 70px;
+    min-width: 70px;
+    padding-right: 8px;
+  }
+
+  .quotes-table th:nth-child(4) {
+    width: 40px;
+    min-width: 40px;
+  }
+
+  .quotes-table td {
+    padding: 2px 3px;
+    height: auto;
+  }
+
+  .quotes-table td:nth-child(1) {
+    width: 60px;
+    min-width: 60px;
+  }
+
+  .quotes-table td:nth-child(3) {
+    width: 70px;
+    min-width: 70px;
+    padding-right: 2px;
+  }
+
+  .quotes-table td:nth-child(4) {
+    width: 40px;
+    min-width: 40px;
+    padding: 1px 1px;
+  }
+
+  .quote-code-input,
+  .quote-description-input {
+    font-size: 0.85rem;
+    padding: 2px 3px;
+    height: 100%;
+    line-height: 1;
+  }
+
+  .currency-input-wrapper {
+    height: 100%;
+    border: 1px solid #bbb;
+  }
+
+  .currency-symbol {
+    font-size: 0.8rem;
+    padding: 0 3px;
+    height: 100%;
+    line-height: 1;
+  }
+
+  .currency-input {
+    font-size: 0.85rem;
+    padding: 2px 3px;
+    height: 100%;
+    line-height: 1;
+  }
+
+  .quote-totals {
+    padding: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .totals-row {
+    font-size: 0.85rem;
+    padding: 0.25rem 0;
+  }
+
+  .totals-amount {
+    min-width: 70px;
+  }
+
+  .add-quote-form {
+    grid-template-columns: 1fr;
+    border: 1px solid #999;
+    padding: 0;
+    gap: 0;
+  }
+
+  .add-quote-form input,
+  .add-quote-form button {
+    padding: 4px 6px;
+    font-size: 0.85rem;
+    height: auto;
+    line-height: 1;
+    border-radius: 0;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .add-quote-form button {
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .add-quote-form .currency-input-wrapper {
+    height: auto;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .add-quote-form .currency-symbol {
+    font-size: 0.8rem;
+    padding: 0 3px;
+  }
+
+  .add-quote-form .currency-input {
+    font-size: 0.85rem;
+    padding: 4px 3px;
+  }
+}
+
+@media (max-width: 480px) {
+  .quotes-table {
+    font-size: 0.8rem;
+  }
+
+  .quotes-table th {
+    padding: 4px 2px;
+    font-size: 0.75rem;
+  }
+
+  .quotes-table th:nth-child(1) {
+    width: 55px;
+    min-width: 55px;
+  }
+
+  .quotes-table th:nth-child(3) {
+    width: 65px;
+    min-width: 65px;
+    padding-right: 6px;
+  }
+
+  .quotes-table th:nth-child(4) {
+    width: 35px;
+    min-width: 35px;
+  }
+
+  .quotes-table td {
+    padding: 2px 2px;
+    height: auto;
+  }
+
+  .quotes-table td:nth-child(1) {
+    width: 55px;
+    min-width: 55px;
+  }
+
+  .quotes-table td:nth-child(3) {
+    width: 65px;
+    min-width: 65px;
+    padding-right: 2px;
+  }
+
+  .quotes-table td:nth-child(4) {
+    width: 35px;
+    min-width: 35px;
+    padding: 1px;
+  }
+
+  .quote-code-input,
+  .quote-description-input {
+    font-size: 0.8rem;
+    padding: 1px 2px;
+    height: 100%;
+    line-height: 1;
+  }
+
+  .currency-input-wrapper {
+    height: 100%;
+  }
+
+  .currency-symbol {
+    font-size: 0.75rem;
+    padding: 0 2px;
+    height: 100%;
+    line-height: 1;
+  }
+
+  .currency-input {
+    font-size: 0.8rem;
+    padding: 1px 2px;
+    height: 100%;
+    line-height: 1;
+  }
+
+  .add-quote-form {
+    grid-template-columns: 1fr;
+  }
+
+  .add-quote-form input,
+  .add-quote-form button {
+    padding: 3px 4px;
+    font-size: 0.8rem;
+    height: auto;
+    line-height: 1;
+  }
+
+  .add-quote-form .currency-input-wrapper {
+    height: auto;
+  }
+
+  .add-quote-form .currency-symbol {
+    font-size: 0.75rem;
+    padding: 0 2px;
+  }
+
+  .add-quote-form .currency-input {
+    font-size: 0.8rem;
+    padding: 3px 2px;
+  }
+}
