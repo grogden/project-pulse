@@ -12,8 +12,8 @@ function HomePage() {
   const modules = [
     {
       id: 'quote-builder',
-      title: 'Quote Builder',
-      description: 'Create and manage project quotes',
+      title: 'Projects',
+      description: 'Create and manage projects, track progress, and collaborate with your team.',
       icon: '📋',
       path: '/quote-builder'
     },

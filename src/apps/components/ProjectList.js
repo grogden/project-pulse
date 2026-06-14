@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { AuthContext } from '../../AuthContext';
+import '../../pages/project-grid-styles.css';
 
 function ProjectList() {
   const navigate = useNavigate();
@@ -23,10 +24,10 @@ function ProjectList() {
   });
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      if (!user) return;
+    if (!user) return;
 
-      setLoading(true);
+    setLoading(true);
+    const fetchProjects = async () => {
       const { data, error } = await supabase
         .from('projects')
         .select('*')
@@ -175,20 +176,31 @@ function ProjectList() {
     });
   };
 
-  return (
-    <div>
-      <h2>My Projects</h2>
+  const formatBudgetDisplay = (value) => {
+    if (!value) return '';
+    return parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
-      {/* ADD PROJECT SECTION */}
-      <div className="add-project-container">
+  const formatDateDisplay = (dateString) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  return (
+    <div className="project-list-container">
+      <div className="project-list-header">
+        <h2>My Projects</h2>
         <button
           className="toggle-add-project-btn"
           onClick={() => setShowAddForm(!showAddForm)}
         >
-          {showAddForm ? '▼ Close' : '▶ Add New Project'}
+          {showAddForm ? '✕ Close' : '+ Add New Project'}
         </button>
+      </div>
 
-        {showAddForm && (
+      {/* ADD PROJECT SECTION */}
+      {showAddForm && (
+        <div className="add-project-container">
           <div className="add-project-form">
             <h3>Basic Information</h3>
             <div className="form-row">
@@ -320,8 +332,8 @@ function ProjectList() {
               Create Project
             </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* FILTER SECTION */}
       <div className="filter-section">
@@ -375,63 +387,106 @@ function ProjectList() {
         )}
       </div>
 
-      {/* PROJECTS LIST */}
-      <div className="projects-section">
+      {/* PROJECTS TABLE */}
+      <div className="projects-table-section">
         {loading ? (
-          <p>Loading projects...</p>
+          <div className="loading-message">
+            <p>Loading projects...</p>
+          </div>
         ) : filteredProjects.length === 0 ? (
-          <p>
-            {projects.length === 0
-              ? 'No projects yet. Create one to get started!'
-              : 'No projects match your filters.'}
-          </p>
+          <div className="empty-message">
+            <p>
+              {projects.length === 0
+                ? 'No projects yet. Create one to get started!'
+                : 'No projects match your filters.'}
+            </p>
+          </div>
         ) : (
-          <ul>
-            {filteredProjects.map(project => (
-              <li key={project.id} className="project-item">
-                <div className="project-header">
-                  <div>
-                    <strong onClick={() => navigate(`/quote-builder/project/${project.id}`)}
-                      style={{ cursor: 'pointer', color: '#007bff' }}>
-                      {project.name}
-                    </strong>
-                    <div>
-                      <span>{project.client}</span>
-                    </div>
-                    <div>
-                      <span className={`status status-${project.status}`}>
+          <div className="table-wrapper">
+            <table className="projects-table">
+              <thead>
+                <tr>
+                  <th>Project Name</th>
+                  <th>Client</th>
+                  <th>Status</th>
+                  <th>Location</th>
+                  <th>Budget</th>
+                  <th>Start Date</th>
+                  <th>Due Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProjects.map(project => (
+                  <tr key={project.id} className="project-row">
+                    <td className="project-name-cell">
+                      <span
+                        className="project-name-link"
+                        onClick={() => navigate(`/quote-builder/project/${project.id}`)}
+                        title="View project"
+                      >
+                        {project.name}
+                      </span>
+                    </td>
+                    <td>{project.client}</td>
+                    <td>
+                      <span className={`status-badge status-${project.status}`}>
                         {project.status}
                       </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="delete-actions">
-                  <button
-                    className="delete-btn"
-                    title="Delete project"
-                    onClick={() => {
-                      if (deletingProjectId === project.id) {
-                        handleDeleteProject(project.id);
-                      } else {
-                        setDeletingProjectId(project.id);
+                    </td>
+                    <td>
+                      {project.city && project.state 
+                        ? `${project.city}, ${project.state}`
+                        : project.city || project.state || '—'
                       }
-                    }}
-                  >
-                    {deletingProjectId === project.id ? '✓' : '🗑️'}
-                  </button>
-                  {deletingProjectId === project.id && (
-                    <button
-                      className="cancel-delete-btn"
-                      onClick={() => setDeletingProjectId(null)}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
+                    </td>
+                    <td className="budget-cell">
+                      {project.budget ? `$${formatBudgetDisplay(project.budget)}` : '—'}
+                    </td>
+                    <td className="date-cell">
+                      {formatDateDisplay(project.start_date) || '—'}
+                    </td>
+                    <td className="date-cell">
+                      {formatDateDisplay(project.due_date) || '—'}
+                    </td>
+                    <td className="actions-cell">
+                      <div className="action-buttons">
+                        <button
+                          className="view-btn"
+                          onClick={() => navigate(`/quote-builder/project/${project.id}`)}
+                          title="View project"
+                        >
+                          View
+                        </button>
+                        <button
+                          className="delete-btn"
+                          title="Delete project"
+                          onClick={() => {
+                            if (deletingProjectId === project.id) {
+                              handleDeleteProject(project.id);
+                            } else {
+                              setDeletingProjectId(project.id);
+                            }
+                          }}
+                        >
+                          {deletingProjectId === project.id ? '✓' : '🗑️'}
+                        </button>
+                        {deletingProjectId === project.id && (
+                          <button
+                            className="cancel-delete-btn"
+                            onClick={() => setDeletingProjectId(null)}
+                            title="Cancel delete"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
