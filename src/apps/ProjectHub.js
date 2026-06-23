@@ -4,7 +4,7 @@ import Sidebar from '../Sidebar';
 import ProjectList from '../components/ProjectList';
 import ProjectDetail from '../components/ProjectDetail';
 
-function QuoteBuilderApp() {
+function ProjectHubApp() {
   return (
     <div className="app-container">
       <Sidebar appName="Project Pulse" />
@@ -18,4 +18,4 @@ function QuoteBuilderApp() {
   );
 }
 
-export default QuoteBuilderApp;
+export default ProjectHubApp;

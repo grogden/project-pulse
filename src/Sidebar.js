@@ -49,7 +49,7 @@ function Sidebar({ appName = 'Project Pulse' }) {
           </button>
           <button
             className="nav-link"
-            onClick={() => handleNavigation('/quote-builder')}
+            onClick={() => handleNavigation('/project-hub')}
           >
             💼 Projects
           </button>

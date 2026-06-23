@@ -1,0 +1,26 @@
+:root {
+  /* Colors */
+  --color-primary: #007bff;
+  --color-danger: #dc3545;
+  --color-success: #28a745;
+  --color-text: #333;
+  --color-bg: #fff;
+  --color-border: #ddd;
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  
+  /* Transitions */
+  --transition: 0.2s ease;
+}

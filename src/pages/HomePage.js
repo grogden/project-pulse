@@ -11,11 +11,11 @@ function HomePage() {
 
   const modules = [
     {
-      id: 'quote-builder',
+      id: 'project-hub',
       title: 'Projects',
       description: 'Create and manage projects, track progress, and collaborate with your team.',
       icon: '📋',
-      path: '/quote-builder'
+      path: '/project-hub'
     },
     {
       id: 'invoicing',

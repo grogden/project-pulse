@@ -49,7 +49,7 @@ function Login() {
       if (result.success) {
         setSuccessMessage('Login successful! Redirecting...');
         setTimeout(() => {
-          navigate('/quote-builder');
+          navigate('/App');
         }, 1000);
       } else {
         setError(result.error);

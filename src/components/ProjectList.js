@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
-import { AuthContext } from '../../AuthContext';
-import '../../styles/project-grid-styles.css';
+import { supabase } from '../supabaseClient';
+import { AuthContext } from '../AuthContext';
+import '../styles/project-grid-styles.css';
 
 function ProjectList() {
   const navigate = useNavigate();
@@ -422,7 +422,7 @@ function ProjectList() {
                     <td className="project-name-cell">
                       <span
                         className="project-name-link"
-                        onClick={() => navigate(`/quote-builder/project/${project.id}`)}
+                        onClick={() => navigate(`/project-hub/project/${project.id}`)}
                         title="View project"
                       >
                         {project.name}
@@ -453,7 +453,7 @@ function ProjectList() {
                       <div className="action-buttons">
                         <button
                           className="view-btn"
-                          onClick={() => navigate(`/quote-builder/project/${project.id}`)}
+                          onClick={() => navigate(`/project-hub/project/${project.id}`)}
                           title="View project"
                         >
                           View

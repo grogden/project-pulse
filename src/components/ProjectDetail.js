@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
-import '../../styles/quotes-table-styles.css';
-import '../../styles/tabs-styles.css';
+import { supabase } from '../supabaseClient';
+import '../styles/quotes-table-styles.css';
+import '../styles/tabs-styles.css';
 
 function ProjectDetail() {
   const { projectId } = useParams();
@@ -11,9 +11,6 @@ function ProjectDetail() {
   const [quotes, setQuotes] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [editingProject, setEditingProject] = useState(true);
-  const [editingQuoteId, setEditingQuoteId] = useState(null);
-  const [editQuoteData, setEditQuoteData] = useState({ code: '', description: '', amount: '' });
   const [editingInvoiceId, setEditingInvoiceId] = useState(null);
   const [editInvoiceData, setEditInvoiceData] = useState({ description: '', amount: '', status: '' });
   const [deletingQuoteId, setDeletingQuoteId] = useState(null);
@@ -25,7 +22,6 @@ function ProjectDetail() {
 
   // Tab state
   const [activeTab, setActiveTab] = useState('quotes');
-  const [saveStatus, setSaveStatus] = useState('saved'); // 'saved', 'saving', 'error'
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -100,9 +96,6 @@ function ProjectDetail() {
 
     if (!hasChanges) return;
 
-    // Set saving status
-    setSaveStatus('saving');
-
     // Debounce the save - wait 1 second after last change
     const saveTimeout = setTimeout(async () => {
       try {
@@ -129,16 +122,11 @@ function ProjectDetail() {
 
         if (error) {
           console.error('Error saving project:', error);
-          setSaveStatus('error');
-          setTimeout(() => setSaveStatus('saved'), 2000);
         } else {
           setProject(projectData);
-          setSaveStatus('saved');
         }
       } catch (err) {
         console.error('Error:', err);
-        setSaveStatus('error');
-        setTimeout(() => setSaveStatus('saved'), 2000);
       }
     }, 1000);
 
@@ -150,11 +138,6 @@ function ProjectDetail() {
     if (cleaned.length <= 3) return cleaned;
     if (cleaned.length <= 6) return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
     return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
-  };
-
-  const formatBudgetDisplay = (value) => {
-    if (!value) return '';
-    return parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   const formatCurrencyInput = (value) => {
@@ -219,51 +202,6 @@ function ProjectDetail() {
     document.getElementById('quote-code').value = '';
     document.getElementById('quote-desc').value = '';
     document.getElementById('quote-amount').value = '';
-  };
-
-  const handleEditQuote = (quote) => {
-    setEditingQuoteId(quote.id);
-    setEditQuoteData({
-      code: quote.code || '',
-      description: quote.description,
-      amount: quote.quote_amount.toString()
-    });
-  };
-
-  const handleSaveQuote = async (quoteId) => {
-    if (!editQuoteData.description || !editQuoteData.amount) return;
-
-    const { error } = await supabase
-      .from('quotes')
-      .update({
-        code: editQuoteData.code || null,
-        description: editQuoteData.description,
-        quote_amount: parseFloat(editQuoteData.amount)
-      })
-      .eq('id', quoteId);
-
-    if (error) {
-      console.error('Error updating quote:', error);
-      return;
-    }
-
-    const updatedQuotes = quotes.map(q =>
-      q.id === quoteId
-        ? { ...q, code: editQuoteData.code || null, description: editQuoteData.description, quote_amount: parseFloat(editQuoteData.amount) }
-        : q
-    ).sort((a, b) => {
-      if (!a.code || !b.code) return 0;
-      return a.code.localeCompare(b.code);
-    });
-
-    setQuotes(updatedQuotes);
-    setEditingQuoteId(null);
-    setEditQuoteData({ code: '', description: '', amount: '' });
-  };
-
-  const handleCancelEdit = () => {
-    setEditingQuoteId(null);
-    setEditQuoteData({ code: '', description: '', amount: '' });
   };
 
   // Debounced auto-save for quote changes
@@ -506,7 +444,7 @@ function ProjectDetail() {
   return (
     <div className="App">
       <div className="project-detail-header">
-        <button className="back-btn" onClick={() => navigate('/quote-builder')}>← Back</button>
+        <button className="back-btn" onClick={() => navigate('/project-hub')}>← Back</button>
         <h1>{project.name}</h1>
       </div>
 

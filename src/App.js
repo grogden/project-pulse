@@ -3,8 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthContext, AuthProvider } from './AuthContext';
 import Login from './Login';
 import HomePage from './pages/HomePage';
-import QuoteBuilderApp from './apps/QuoteBuilderApp';
-import ProjectDetail from './apps/components/ProjectDetail';
+import ProjectHubApp from './apps/ProjectHub';
+import ProjectDetail from './components/ProjectDetail';
 import './App.css';
 
 function AppContent() {
@@ -31,8 +31,8 @@ function AppContent() {
           // Logged in - show app
           <>
             <Route path="/" element={<HomePage />} />
-            <Route path="/quote-builder" element={<QuoteBuilderApp />} />
-            <Route path="/quote-builder/project/:projectId" element={<ProjectDetail />} />
+            <Route path="/project-hub" element={<ProjectHubApp />} />
+            <Route path="/project-hub/project/:projectId" element={<ProjectDetail />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </>
         )}
